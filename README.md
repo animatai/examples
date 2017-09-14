@@ -13,6 +13,11 @@ At least Python 3.5 is needed since `async` is used (using Python 3.6 here).
 * Activate `virtualenv`: `source venv3/bin/activate`
 * Install the animat ecosystem: `pip install animats`.
 
+Create a config file: `cp venv3/lib/python3.6/site-packages/ecosystem/config.py.template config.py`
+
+Having the start script here is convenient: `cp venv3/lib/python3.6/site-packages/ecosystem/start.sh .`
+
+
 
 Development
 ===========
