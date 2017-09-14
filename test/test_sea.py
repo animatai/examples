@@ -9,11 +9,10 @@
 
 import unittest
 
-from worlds.sea import Sea
-from worlds.sea import Squid
-from agents import Agent
-from agents import Obstacle
+from ecosystem.agents import Agent, Obstacle
 from gzutils.gzutils import Logging
+
+from sea import Sea, Squid
 
 
 # Setup logging

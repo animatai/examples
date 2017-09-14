@@ -9,7 +9,6 @@ from ecosystem.agents import Thing, Obstacle, Direction, NSArtifact, XYEnvironme
 from gzutils.gzutils import DotDict, Logging, get_output_dir, save_csv_file
 
 
-
 # Setup constants and logging
 # ===========================
 

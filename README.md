@@ -20,4 +20,6 @@ Development
 Use [Google Style Guide](https://google.github.io/styleguide/pyguide.html)
 and make sure that the unit tests are maintained.
 
+Install the development tools: `pip install -r requirements.txt`
+
 Build (lint and run unit tests) with: `./build.sh`
