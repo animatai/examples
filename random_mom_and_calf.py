@@ -7,15 +7,11 @@
 
 import random
 
-from agents import Agent
-from network_rl import BasicAgent
+from ecosystem.agents import Agent
+from ecosystem.network_rl import BasicAgent
+from gzutils.gzutils import DotDict, Logging
 
-from myutils import DotDict
-from gzutils.gzutils import Logging
-
-from .sea import Sea
-from .sea import Sing
-from .sea import Squid
+from .sea import Sea, Sing, Squid
 
 # Setup logging
 # =============

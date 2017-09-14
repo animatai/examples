@@ -3,14 +3,15 @@ Animat examples
 
 Some examples using the [animat AI ecosystem](https://github.com/animatai/ecosystem)
 
+
 Setup
 =====
 
-At least Python 3.5 is needed since `async` is used in `wsserver.py`. I'm using Python 3.6 here.
+At least Python 3.5 is needed since `async` is used (using Python 3.6 here).
 
 * First init `virtualenv` for Python3: `virtualenv -p python3.6 venv3` (`virutalenv` needs to be installed)
 * Activate `virtualenv`: `source venv3/bin/activate`
-* Install the necessary Python packages: `pip install -r requirements.txt`. Add `--no-compile` when running on ubuntu.
+* Install the animat ecosystem: `pip install animats`.
 
 
 Development

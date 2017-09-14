@@ -7,16 +7,10 @@
 
 import random
 
-from agents import Agent
-from agents import Thing
-from agents import Direction
-from agents import NSArtifact
-from agents import XYEnvironment
+from gzutils.gzutils import DotDict, Logging
+from ecosystem.agents import Agent, Thing, Direction, NSArtifact, XYEnvironment
+from ecosystem.utils import vector_add
 
-from utils import vector_add
-
-from gzutils.gzutils import Logging
-from myutils import DotDict
 
 
 # Setup logging

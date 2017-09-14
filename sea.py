@@ -5,15 +5,10 @@
 # Copyright (C) 2017  Jonas Colmsjö, Claes Strannegård
 #
 
-from agents import Thing
-from agents import Obstacle
-from agents import Direction
-from agents import NSArtifact
-from agents import XYEnvironment
+from ecosystem.agents import Thing, Obstacle, Direction, NSArtifact, XYEnvironment
+from gzutils.gzutils import DotDict, Logging, get_output_dir, save_csv_file
 
-from myutils import DotDict
-from gzutils.gzutils import Logging
-from myutils import get_output_dir, save_csv_file
+
 
 # Setup constants and logging
 # ===========================
