@@ -22,15 +22,20 @@ l = Logging('random_mom_and_calf', DEBUG_MODE)
 # squid and sing.
 def mom_program(percept):
 
-    action = None
-    if isinstance(percept, 'Squid'):
-        l.info('--- MOM FOUND SQUID, SINGING AND EATING! ---')
-        action = 'sing_eat_and_forward'
+    # unpack the percepts tuple: ([Thing|NonSpatial], rewards)
+    percepts, rewards = percept
 
-    else:
+    action = None
+    for percept in percepts:
+        object_, radius = percept
+        if isinstance(object_, Squid):
+            l.info('--- MOM FOUND SQUID, SINGING AND EATING! ---')
+            action = 'sing_eat_and_forward'
+
+    if not action:
         action = 'forward'
         rand = random.random()
-        if  rand < 1/3:
+        if rand < 1/3:
             action = 'dive_and_forward'
         elif rand < 2/3:
             action = 'up_and_forward'
@@ -44,16 +49,23 @@ def mom_program(percept):
 # just move forward.
 def calf_program(percept):
 
+    # unpack the percepts tuple: ([Thing|NonSpatial], rewards)
+    percepts, rewards = percept
+
     action = None
-    if isinstance(percept, 'Song'):
-        l.info('--- CALF HEARD SONG, DIVING! ---')
-        action = 'dive_and_forward'
 
-    elif isinstance(percept, 'Squid'):
-        l.info('--- CALF FOUND SQUID, EATING! ---')
-        action = 'eat_and_forward'
+    for percept in percepts:
+        object_, radius = percept
+        if isinstance(object_, Squid):
+            l.info('--- CALF FOUND SQUID, EATING! ---')
+            action = 'eat_and_forward'
 
-    else:
+        if not action and isinstance(object_, Song):
+            l.info('--- CALF HEARD SONG, DIVING! ---')
+            action = 'dive_and_forward'
+
+
+    if not action:
         action = 'forward'
         rand = random.random()
         if  rand < 1/3:
@@ -81,10 +93,10 @@ terrain = ('WWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWW\n' +
 # the mother and calf have separate and identical lanes
 things = ('XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX\n' +
           '                                                  \n' +
-          '                                                  \n' +
+          '  ss                                      ss      \n' +
           'XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX\n' +
           '                                                  \n' +
-          '                                                  \n' +
+          '  ss                                      ss      \n' +
           'XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX')
 
 # the mother and calf have separate and identical lanes
@@ -109,9 +121,9 @@ OPTIONS = DotDict({
     'things': things.split('\n'),
     'exogenous_things': exogenous_things.split('\n'),
     'exogenous_things_prob': 0.01,
-    'objectives': {'energy': 1},
-    'reward':{
-        'eat_and_forward': {
+    'objectives': {'energy': 1.0},
+    'rewards':{
+        'sing_eat_and_forward': {
             Squid: {
                 'energy': 0.1
             },
@@ -119,9 +131,12 @@ OPTIONS = DotDict({
                 'energy': -0.05
             }
         },
-        'forward': {
+        'eat_and_forward': {
+            Squid: {
+                'energy': 0.1
+            },
             None: {
-                'energy': -0.001
+                'energy': -0.05
             }
         },
         'dive_and_forward': {
@@ -134,31 +149,32 @@ OPTIONS = DotDict({
                 'energy': -0.002
             }
         },
-        'sing': {
+        'forward': {
             None: {
                 'energy': -0.001
             }
         },
     },
-    'agents': {
-        'mom': {
-            'sensors': [(Squid, 's')],
-            'motors': [('eat_and_forward', ['eat', 'forward']),
-                       ('forward', ['forward']),
-                       ('dive_and_forward', ['down', 'forward']),
-                       ('up_and_forward', ['up', 'forward']),
-                       ('sing', ['sing'])
-                      ],
-        },
-        'calf': {
-            'sensors': [(Squid, 's'), (Song, 'S')],
-            'motors': [('eat_and_forward', ['eat', 'forward']),
-                       ('forward', ['forward']),
-                       ('dive_and_forward', ['down', 'forward']),
-                       ('up_and_forward', ['up', 'forward'])
-                      ],
-        }
-    },
+# ToDo: OLD - just remove when refactoring is complete
+#    'agents': {
+#        'mom': {
+#            'sensors': [(Squid, 's')],
+#            'motors': [('eat_and_forward', ['eat', 'forward']),
+#                       ('forward', ['forward']),
+#                       ('dive_and_forward', ['down', 'forward']),
+#                       ('up_and_forward', ['up', 'forward']),
+#                       ('sing', ['sing'])
+#                      ],
+#        },
+#        'calf': {
+#            'sensors': [(Squid, 's'), (Song, 'S')],
+#            'motors': [('eat_and_forward', ['eat', 'forward']),
+#                       ('forward', ['forward']),
+#                       ('dive_and_forward', ['down', 'forward']),
+#                       ('up_and_forward', ['up', 'forward'])
+#                      ],
+#        }
+#    },
     'wss_cfg': {
         'numTilesPerSquare': (1, 1),
         'drawGrid': True,

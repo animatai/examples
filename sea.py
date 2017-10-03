@@ -34,8 +34,8 @@ class Sea(XYEnvironment):
 
     def __init__(self, options):
         self.options = DotDict(options)
-        self.ENV_ENCODING = [('s', Squid), ('X', Obstacle)]
-        self.save_history_for = [Squid]
+        options.ENV_ENCODING = [('s', Squid), ('X', Obstacle)]
+        options.save_history_for = [Squid]
         super().__init__(options)
 
     # to be used after the __call__ function
@@ -47,6 +47,7 @@ class Sea(XYEnvironment):
         for cls in self.save_history_for:
             res = res or self.environment_history[cls][i] < self.environment_history[cls][i - 1]
         return res
+
 
     #def check_history(self, agent):
     #    if agent.any_status_increased() and not self.any_measurement_decreased():
@@ -64,30 +65,31 @@ class Sea(XYEnvironment):
     # Using the SensorModel and MotorModel to give names to states and actions
     # ('state', 'action', 'future state', reward)
     def calc_performance(self, agent, action):
-        reward = {}
+        rewards = {}
         # pylint: disable=len-as-condition
-        #if not hasattr(agent, 'objectives'):
-        #    agent.objectives = self.options.objectives.copy()
-        #    self.save_history(agent)
+        if not hasattr(agent, 'objectives'):
+            agent.status = self.options.objectives.copy()
 
-        for rewarded_action, things_and_objectives in self.options.reward.items():
+        for rewarded_action, object_and_objectives in self.options.rewards.items():
             if action == rewarded_action:
-                for rewarded_thing, obj_and_reward in things_and_objectives.items():
+                for rewarded_thing, obj_and_reward in object_and_objectives.items():
                     if rewarded_thing and len(self.list_things_at(agent.location, rewarded_thing)):
                         for obj, rew in obj_and_reward.items():
-                            #agent.objectives[obj] += rew
-                            reward[obj] = rew
+                            agent.status[obj] += rew
+                            rewards[obj] = rew
+                            agent.alive = agent.alive and agent.status[obj] > 0
                     elif rewarded_thing is None:
-                        for obj, reward in obj_and_reward.items():
-                            #agent.objectives[obj] += reward
-                            reward[obj] = rew
+                        for obj, rew in obj_and_reward.items():
+                            agent.status[obj] += rew
+                            rewards[obj] = rew
+                            agent.alive = agent.alive and agent.status[obj] > 0
 
-        #self.check_is_alive(agent)
-        #self.save_history(agent)
-        #self.check_history(agent)
-        l.info(agent.__name__, 'status:', agent.objectives)
+        l.info(agent.__name__, 'alive:', agent.alive,
+                               ', status:', agent.status,
+                               ', rewards:', rewards,
+                               ', env_history:', [self.environment_history[cls][len(self.environment_history[cls])-1] for cls in self.save_history_for])
 
-        return reward
+        return rewards
 
     def execute_action(self, agent, action, time):
         self.show_message((agent.__name__ + ' performing ' + action + ' at location ' +
@@ -120,14 +122,14 @@ class Sea(XYEnvironment):
             self.add_non_spatial(Song(), time)
             eat()
             forward()
+        elif action == 'eat_and_forward':
+            eat()
+            forward()
         elif action == 'dive_and_forward':
             down()
             forward()
         elif action == 'up_and_forward':
             up()
-            forward()
-        elif action == 'eat_and_forward':
-            eat()
             forward()
         elif action == 'forward':
             forward()
