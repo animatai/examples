@@ -8,6 +8,6 @@ s = 'import ' + mod
 s += '\n' + mod + '.run(None, ' + num + ')'
 
 
-print('Generated python:\n'+s)
+print('Generated python:\n'+s+'\n')
 
 exec(s)

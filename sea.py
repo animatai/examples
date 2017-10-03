@@ -5,7 +5,7 @@
 # Copyright (C) 2017  Jonas Colmsjö, Claes Strannegård
 #
 
-from ecosystem.agents import Thing, Obstacle, Direction, NSArtifact, XYEnvironment
+from ecosystem.agents import Thing, Obstacle, Direction, NonSpatial, XYEnvironment
 from gzutils.gzutils import DotDict, Logging, get_output_dir, save_csv_file
 
 
@@ -22,9 +22,9 @@ l = Logging('sea', DEBUG_MODE)
 class Squid(Thing):
     pass
 
-class Sing(NSArtifact):
+# action 'sing' creates Song
+class Song(NonSpatial):
     pass
-
 
 # motors are executed instead of single actions. motors consists of several actions
 # and setup in the options for the agent.
@@ -41,16 +41,16 @@ class Sea(XYEnvironment):
     # to be used after the __call__ function
     def any_measurement_decreased(self):
         any_obj = list(self.environment_history)[0]
-        i, res =  len(self.environment_history[any_obj]), False
+        i, res = len(self.environment_history[any_obj]), False
         if i < 2:
             return False
         for cls in self.save_history_for:
             res = res or self.environment_history[cls][i] < self.environment_history[cls][i - 1]
         return res
 
-    def check_history(self, agent):
-        if agent.any_status_increased() and not self.any_measurement_decreased():
-            l.debug('**** SUSPCICOUS *****', obj_incr, env_decr, agent.objective_history[objective][current_pos], agent.objective_history[objective][current_pos-1], self.environment_history[cls][current_pos], self.environment_history[cls][current_pos])
+    #def check_history(self, agent):
+    #    if agent.any_status_increased() and not self.any_measurement_decreased():
+    #        l.debug('**** SUSPCICOUS *****', obj_incr, env_decr, agent.objective_history[objective][current_pos], agent.objective_history[objective][current_pos-1], self.environment_history[cls][current_pos], self.environment_history[cls][current_pos])
 
     # reward dict:
     #     'reward':{
@@ -84,41 +84,13 @@ class Sea(XYEnvironment):
 
         #self.check_is_alive(agent)
         #self.save_history(agent)
-        self.check_history(agent)
+        #self.check_history(agent)
         l.info(agent.__name__, 'status:', agent.objectives)
 
         return reward
 
-    def execute_ns_action(self, agent, motor, time):
-        '''change the state of the environment for a non spatial attribute, like sound'''
-        if not motor:
-            return
-
-        nsactions = list(filter(lambda x: x[0] == motor,
-                                self.options.agents[agent.__name__]['motors']))
-        if not nsactions:
-            l.info('Motor without nsactions:', motor)
-            return
-
-        # First item in list, second part of tuple
-        nsactions = nsactions[0][1]
-
-        for nsaction in nsactions:
-            self.show_message(('---' + agent.__name__ + ' activating ' +
-                               nsaction + ' at location ' +
-                               str(agent.location) + ' and time ' + str(time) + '---'))
-
-            if nsaction == 'sing':
-                self.add_ns_artifact(Sing(), time)
-            else:
-                l.error('execute_action:unknow nsaction', nsaction,
-                        'for agent', agent, 'at time', time)
-
-    def execute_action(self, agent, motor, time):
-        if not motor:
-            return
-
-        self.show_message((agent.__name__ + ' activating ' + motor + ' at location ' +
+    def execute_action(self, agent, action, time):
+        self.show_message((agent.__name__ + ' performing ' + action + ' at location ' +
                            str(agent.location) + ' and time ' + str(time)))
         def up():
             agent.direction += Direction.L
@@ -143,24 +115,21 @@ class Sea(XYEnvironment):
         # The direction of the agent should always be 'right' in this world
         assert agent.direction.direction == Direction.R
 
-        actions = list(filter(lambda x: x[0] == motor,
-                              self.options.agents[agent.__name__]['motors']))
-        if not actions:
-            l.info('Motor without actions:', motor)
-            return
-
-        # First item in list, second part of tuple
-        actions = actions[0][1]
-
         agent.bump = False
-        for action in actions:
-            if action == 'down':
-                down()
-            elif action == 'up':
-                up()
-            elif action == 'forward':
-                forward()
-            elif action == 'eat':
-                eat()
-            else:
-                l.error('execute_action:unknow action', action, 'for agent', agent, 'at time', time)
+        if action == 'sing_eat_and_forward':
+            self.add_non_spatial(Song(), time)
+            eat()
+            forward()
+        elif action == 'dive_and_forward':
+            down()
+            forward()
+        elif action == 'up_and_forward':
+            up()
+            forward()
+        elif action == 'eat_and_forward':
+            eat()
+            forward()
+        elif action == 'forward':
+            forward()
+        else:
+            l.error('execute_action:unknow action', action, 'for agent', agent, 'at time', time)

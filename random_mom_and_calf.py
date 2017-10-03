@@ -8,10 +8,9 @@
 import random
 
 from ecosystem.agents import Agent
-from ecosystem.network_rl import BasicAgent
 from gzutils.gzutils import DotDict, Logging
 
-from .sea import Sea, Sing, Squid
+from sea import Sea, Song, Squid
 
 # Setup logging
 # =============
@@ -21,46 +20,48 @@ l = Logging('random_mom_and_calf', DEBUG_MODE)
 
 # Mom that moves by random until squid is found. Move forward when there is
 # squid and sing.
-def mom_program(active_sensors, _):
+def mom_program(percept):
 
-    action, nsaction = None, None
+    action = None
+    if isinstance(percept, 'Squid'):
+        l.info('--- MOM FOUND SQUID, SINGING AND EATING! ---')
+        action = 'sing_eat_and_forward'
 
-    if 's' in active_sensors:
-        l.info('--- MOM FOUND SQUID, EATING AND SINGING! ---')
-        action = 'eat_and_forward'
-        nsaction = 'sing'
-
-    if not action:
-        if random.random() < 0.5:
+    else:
+        action = 'forward'
+        rand = random.random()
+        if  rand < 1/3:
             action = 'dive_and_forward'
-        else:
+        elif rand < 2/3:
             action = 'up_and_forward'
 
-    return (action, nsaction)
+
+    return action
 
 
 # Calf that will by random until hearing song. Dive when hearing song.
 # The world will not permit diving below the bottom surface, so it will
 # just move forward.
-def calf_program(active_sensors, active_ns_sensors):
+def calf_program(percept):
 
-    action, nsaction = None, None
-
-    if 'S' in active_ns_sensors:
+    action = None
+    if isinstance(percept, 'Song'):
         l.info('--- CALF HEARD SONG, DIVING! ---')
         action = 'dive_and_forward'
 
-    if 's' in active_sensors:
+    elif isinstance(percept, 'Squid'):
         l.info('--- CALF FOUND SQUID, EATING! ---')
         action = 'eat_and_forward'
 
-    if not action:
-        if random.random() < 0.5:
+    else:
+        action = 'forward'
+        rand = random.random()
+        if  rand < 1/3:
             action = 'dive_and_forward'
-        else:
+        elif rand < 2/3:
             action = 'up_and_forward'
 
-    return (action, nsaction)
+    return action
 
 
 # Main
@@ -150,7 +151,7 @@ OPTIONS = DotDict({
                       ],
         },
         'calf': {
-            'sensors': [(Squid, 's'), (Sing, 'S')],
+            'sensors': [(Squid, 's'), (Song, 'S')],
             'motors': [('eat_and_forward', ['eat', 'forward']),
                        ('forward', ['forward']),
                        ('dive_and_forward', ['down', 'forward']),

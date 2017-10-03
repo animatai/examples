@@ -102,8 +102,8 @@ class TestCachalot(unittest.TestCase):
         e.add_thing(a, (1, 1))
 
         # song at time=1 will be heard by other agents at time=2
-        e.execute_ns_action(a, 'sing', 1)
-        self.assertTrue(len(e.list_ns_artifacts_at(2)) == 1)
+        e.execute_action(a, 'sing_eat_and_forward', 1)
+        self.assertTrue(len(e.list_nonspatial_at(2)) == 1)
 
 
     def tearDown(self):
