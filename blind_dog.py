@@ -172,22 +172,29 @@ class BlindDog(Agent):
         return True
 
 # Returns an action based on it's percepts
-def program(percepts):
+def program(percept):
+
+    # unpack the percepts tuple: ([Thing|NonSpatial], rewards)
+    percepts, rewards = percept
 
     action = 'bark' if random.random() < 0.25 else 'Forward'
 
-    for p in percepts:
-        if isinstance(p, Food):
+    for percept in percepts:
+        object_, radius = percept
+        if isinstance(object_, Food):
+            l.info('-- EATING ---')
             action = 'eat'
             break
-        elif isinstance(p, Water):
+        elif isinstance(object_, Water):
+            l.info('-- DRINKING ---')
             action = 'drink'
             break
         elif random.random() < 0.5:
             action = 'watch'
             break
 
-        if isinstance(p, Bark) and random.random() < 0.5:
+        if isinstance(object_, Bark) and random.random() < 0.5:
+            l.info('-- HEARD BARK ---')
             action = 'bark'
             break
 
@@ -199,9 +206,9 @@ def program(percepts):
 # =====
 
 # _=param
-def run(wss=None, param=None):
-    l.debug('Running blind_dog with param:', param)
-    param = int(param) if param else 10
+def run(wss=None, steps=None, seed=None):
+    steps = int(steps) if steps else 10
+    l.debug('Running blind_dog ', steps, ' steps')
 
     options = OPTIONS
     options.wss = wss
@@ -226,7 +233,7 @@ def run(wss=None, param=None):
     park.add_thing(dogfood, (0, 5))
     park.add_thing(water, (0, 7))
 
-    park.run(param)
+    park.run(steps)
 
 if __name__ == "__main__":
     run()

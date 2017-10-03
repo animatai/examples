@@ -58,9 +58,11 @@ def random_move(from_pos):
 
     return new_pos
 
-def run(wss_, param):
+def run(wss_=None, steps=None, seed=None):
+    steps = int(steps) if steps else 10
+
     wss_.send_init(CFG)
-    for _ in range(0, int(param)):
+    for _ in range(0, steps):
         for agent in CFG['agents']:
             update_agent_pos(CFG, agent, random_move(get_agent_pos(CFG, agent)))
             wss_.send_update_agent(agent, CFG['agents'][agent])

@@ -16,7 +16,12 @@ from sea import Sea, Song, Squid
 # =============
 
 DEBUG_MODE = True
-l = Logging('random_mom_and_calf', DEBUG_MODE)
+l = Logging('random_mom_and_calf2', DEBUG_MODE)
+
+class Mom(Agent):
+
+    def __repr__(self):
+        return '<{} ({})>'.format(self.__name__, self.__class__.__name__)
 
 # Mom that moves by random until squid is found. Move forward when there is
 # squid and sing.
@@ -155,6 +160,26 @@ OPTIONS = DotDict({
             }
         },
     },
+# ToDo: OLD - just remove when refactoring is complete
+#    'agents': {
+#        'mom': {
+#            'sensors': [(Squid, 's')],
+#            'motors': [('eat_and_forward', ['eat', 'forward']),
+#                       ('forward', ['forward']),
+#                       ('dive_and_forward', ['down', 'forward']),
+#                       ('up_and_forward', ['up', 'forward']),
+#                       ('sing', ['sing'])
+#                      ],
+#        },
+#        'calf': {
+#            'sensors': [(Squid, 's'), (Song, 'S')],
+#            'motors': [('eat_and_forward', ['eat', 'forward']),
+#                       ('forward', ['forward']),
+#                       ('dive_and_forward', ['down', 'forward']),
+#                       ('up_and_forward', ['up', 'forward'])
+#                      ],
+#        }
+#    },
     'wss_cfg': {
         'numTilesPerSquare': (1, 1),
         'drawGrid': True,
@@ -179,8 +204,8 @@ OPTIONS = DotDict({
 # =====
 
 def run(wss=None, steps=None, seed=None):
-    l.debug('Running random_mom_and_calf in', str(steps), 'steps with seed', seed)
     steps = int(steps) if steps else 10
+    l.debug('Running random_mom_and_calf in', str(steps), 'steps with seed', seed)
 
     random.seed(seed)
 

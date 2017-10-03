@@ -48,11 +48,6 @@ class Sea(XYEnvironment):
             res = res or self.environment_history[cls][i] < self.environment_history[cls][i - 1]
         return res
 
-
-    #def check_history(self, agent):
-    #    if agent.any_status_increased() and not self.any_measurement_decreased():
-    #        l.debug('**** SUSPCICOUS *****', obj_incr, env_decr, agent.objective_history[objective][current_pos], agent.objective_history[objective][current_pos-1], self.environment_history[cls][current_pos], self.environment_history[cls][current_pos])
-
     # reward dict:
     #     'reward':{
     #        'eat_and_forward': {
@@ -60,10 +55,6 @@ class Sea(XYEnvironment):
     #            None: { 'energy': -0.05 }
     #        },
     #
-    # TODO: Working - Change to: state, action, state1, reward
-    # ((s1:bool,...,sn:bool), (m1:bool,...,mn:bool), (s1:bool,...,sn:bool), reward:float)
-    # Using the SensorModel and MotorModel to give names to states and actions
-    # ('state', 'action', 'future state', reward)
     def calc_performance(self, agent, action):
         rewards = {}
         # pylint: disable=len-as-condition
