@@ -192,8 +192,7 @@ def program(percept):
         elif random.random() < 0.5:
             action = 'watch'
             break
-
-        if isinstance(object_, Bark) and random.random() < 0.5:
+        elif isinstance(object_, Bark) and random.random() < 0.5:
             l.info('-- HEARD BARK ---')
             action = 'bark'
             break

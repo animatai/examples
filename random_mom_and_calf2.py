@@ -18,67 +18,81 @@ from sea import Sea, Song, Squid
 DEBUG_MODE = True
 l = Logging('random_mom_and_calf2', DEBUG_MODE)
 
+# Mom that moves by random until squid is found. Move forward when there is
+# squid and sing.
 class Mom(Agent):
+
+    def __init__(self):
+        super().__init__(None, 'mom')
+        self.network = Network()
+        self.network.add_SENSOR_node(Squid)
 
     def __repr__(self):
         return '<{} ({})>'.format(self.__name__, self.__class__.__name__)
 
-# Mom that moves by random until squid is found. Move forward when there is
-# squid and sing.
-def mom_program(percept):
+    def program(self, percept):
+        action = None
 
-    # unpack the percepts tuple: ([Thing|NonSpatial], rewards)
-    percepts, rewards = percept
+        # unpack the percepts and rewards: ([(Thing|NonSpatial, radius)], rewards)
+        percepts, rewards = percept
 
-    action = None
-    for percept in percepts:
-        object_, radius = percept
-        if isinstance(object_, Squid):
-            l.info('--- MOM FOUND SQUID, SINGING AND EATING! ---')
-            action = 'sing_eat_and_forward'
+        self.network(update(percepts))
+        if self.netwok.get() == (True,):
+                l.info('--- MOM FOUND SQUID, SINGING AND EATING! ---')
+                action = 'sing_eat_and_forward'
 
-    if not action:
-        action = 'forward'
-        rand = random.random()
-        if rand < 1/3:
-            action = 'dive_and_forward'
-        elif rand < 2/3:
-            action = 'up_and_forward'
+        if not action:
+            action = 'forward'
+            rand = random.random()
+            if rand < 1/3:
+                action = 'dive_and_forward'
+            elif rand < 2/3:
+                action = 'up_and_forward'
 
 
-    return action
+        return action
 
 
 # Calf that will by random until hearing song. Dive when hearing song.
 # The world will not permit diving below the bottom surface, so it will
 # just move forward.
-def calf_program(percept):
+class Calf(Agent):
 
-    # unpack the percepts tuple: ([Thing|NonSpatial], rewards)
-    percepts, rewards = percept
+    def __init__(self):
+        super().__init__(None, 'calf')
+        self.network = Network()
+        self.network.add_SENSOR_node(Squid)
+        self.network.add_SENSOR_node(Song)
 
-    action = None
 
-    for percept in percepts:
-        object_, radius = percept
-        if isinstance(object_, Squid):
+    def __repr__(self):
+        return '<{} ({})>'.format(self.__name__, self.__class__.__name__)
+
+    def program(self, percept):
+        action = None
+
+        # unpack the percepts tuple: ([Thing|NonSpatial], rewards)
+        percepts, rewards = percept
+
+        # sensor tuple = (Squid sensor, Song sensor)
+        self.network(update(percepts))
+        if self.netwok.get()[0]:
             l.info('--- CALF FOUND SQUID, EATING! ---')
             action = 'eat_and_forward'
 
-        if not action and isinstance(object_, Song):
+        if self.netwok.get()[1]:
             l.info('--- CALF HEARD SONG, DIVING! ---')
             action = 'dive_and_forward'
 
+        if not action:
+            action = 'forward'
+            rand = random.random()
+            if  rand < 1/3:
+                action = 'dive_and_forward'
+            elif rand < 2/3:
+                action = 'up_and_forward'
 
-    if not action:
-        action = 'forward'
-        rand = random.random()
-        if  rand < 1/3:
-            action = 'dive_and_forward'
-        elif rand < 2/3:
-            action = 'up_and_forward'
-
-    return action
+        return action
 
 
 # Main
@@ -213,8 +227,8 @@ def run(wss=None, steps=None, seed=None):
     options.wss = wss
     sea = Sea(options)
 
-    mom = Agent(mom_program, 'mom')
-    calf = Agent(calf_program, 'calf')
+    mom = Mom()
+    calf = Calf()
 
     sea.add_thing(mom, mom_start_pos)
     sea.add_thing(calf, calf_start_pos)

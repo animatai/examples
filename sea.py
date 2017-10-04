@@ -34,9 +34,9 @@ class Sea(XYEnvironment):
 
     def __init__(self, options):
         self.options = DotDict(options)
-        options.ENV_ENCODING = [('s', Squid), ('X', Obstacle)]
-        options.save_history_for = [Squid]
-        super().__init__(options)
+        self.options.ENV_ENCODING = [('s', Squid), ('X', Obstacle)]
+        self.options.save_history_for = [Squid]
+        super().__init__(self.options)
 
     # to be used after the __call__ function
     def any_measurement_decreased(self):
@@ -56,9 +56,10 @@ class Sea(XYEnvironment):
     #        },
     #
     def calc_performance(self, agent, action):
-        rewards = {}
         # pylint: disable=len-as-condition
-        if not hasattr(agent, 'objectives'):
+
+        rewards = {}
+        if not hasattr(agent, 'status'):
             agent.status = self.options.objectives.copy()
 
         for rewarded_action, object_and_objectives in self.options.rewards.items():
@@ -76,9 +77,9 @@ class Sea(XYEnvironment):
                             agent.alive = agent.alive and agent.status[obj] > 0
 
         l.info(agent.__name__, 'alive:', agent.alive,
-                               ', status:', agent.status,
-                               ', rewards:', rewards,
-                               ', env_history:', [self.environment_history[cls][len(self.environment_history[cls])-1] for cls in self.save_history_for])
+               ', status:', agent.status,
+               ', rewards:', rewards,
+               ', env_history:', [self.environment_history[cls][len(self.environment_history[cls])-1] for cls in self.save_history_for])
 
         return rewards
 
