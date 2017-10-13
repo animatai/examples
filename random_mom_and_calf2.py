@@ -8,6 +8,8 @@
 import random
 
 from ecosystem.agents import Agent
+from ecosystem.network import Network, MotorNetwork
+from toolz.functoolz import compose
 from gzutils.gzutils import DotDict, Logging
 
 from sea import Sea, Song, Squid
@@ -20,26 +22,63 @@ l = Logging('random_mom_and_calf2', DEBUG_MODE)
 
 # Mom that moves by random until squid is found. Move forward when there is
 # squid and sing.
+#
+# eat_sing_and_forward:  s1
+# forward:               n2 <= NOT(s1, n3, n4)
+# dive_and_forward:      n3 <= AND(NOT(s1), OR(AND(r1, NOT(r2, r3)), AND(r3, NOT(r1, r2))))
+#                              AND(NOT(s1), OR(ONE(r1, [r2, r3], ONE(r3, [r1, r2]))))
+# up_and_forward:        n4 <= AND(NOT(s1), NOT(r1, r2, r3))
+#
+
+
 class Mom(Agent):
 
     def __init__(self):
         super().__init__(None, 'mom')
         self.network = Network()
-        self.network.add_SENSOR_node(Squid)
+        self.s1 = self.network.add_SENSOR_node(Squid)
+        self.r1 = self.network.add_RAND_node(0.3)
+        self.r2 = self.network.add_RAND_node(0.3)
+        self.r3 = self.network.add_RAND_node(0.3)
+
+        state_to_motor = {frozenset([1, 2, 3]): frozenset([1]),
+                          frozenset([1, 2]): frozenset([1]),
+                          frozenset([1, 3]): frozenset([1]),
+                          frozenset([2, 3]): frozenset([1]),
+                          frozenset([2]): frozenset([1]),
+                          frozenset([3]): frozenset([3]),
+                          frozenset([1]): frozenset([3]),
+                          frozenset([]): frozenset([2])}
+
+
+        motors = ['sing_eat_and_forward', 'forward', 'dive_and_forward', 'up_and_forward']
+        motors_to_action = {frozenset([0]): 'sing_eat_and_forward',
+                            frozenset([1]): 'forward',
+                            frozenset([2]): 'dive_and_forward',
+                            frozenset([3]): 'up_and_forward',
+                            '*': '-'}
+
+        self.mnetwork = MotorNetwork(motors, motors_to_action)
+
+        # compose applies the functions from right to left
+        self.program = compose(self.mnetwork.update,
+                               lambda s: state_to_motor.get(s, frozenset([0])),
+                               self.network.update,
+                               lambda x: x[0])
 
     def __repr__(self):
         return '<{} ({})>'.format(self.__name__, self.__class__.__name__)
 
-    def program(self, percept):
+    def program1(self, percept):
         action = None
 
         # unpack the percepts and rewards: ([(Thing|NonSpatial, radius)], rewards)
         percepts, rewards = percept
 
-        self.network(update(percepts))
-        if self.netwok.get() == (True,):
-                l.info('--- MOM FOUND SQUID, SINGING AND EATING! ---')
-                action = 'sing_eat_and_forward'
+        self.network.update(percepts)
+        if self.s1 in self.network.get():
+            l.info('--- MOM FOUND SQUID, SINGING AND EATING! ---')
+            action = 'sing_eat_and_forward'
 
         if not action:
             action = 'forward'
@@ -61,8 +100,8 @@ class Calf(Agent):
     def __init__(self):
         super().__init__(None, 'calf')
         self.network = Network()
-        self.network.add_SENSOR_node(Squid)
-        self.network.add_SENSOR_node(Song)
+        self.s1 = self.network.add_SENSOR_node(Squid)
+        self.s2 = self.network.add_SENSOR_node(Song)
 
 
     def __repr__(self):
@@ -75,14 +114,14 @@ class Calf(Agent):
         percepts, rewards = percept
 
         # sensor tuple = (Squid sensor, Song sensor)
-        self.network(update(percepts))
-        if self.netwok.get()[0]:
-            l.info('--- CALF FOUND SQUID, EATING! ---')
-            action = 'eat_and_forward'
-
-        if self.netwok.get()[1]:
+        self.network.update(percepts)
+        if self.s2 in self.network.get():
             l.info('--- CALF HEARD SONG, DIVING! ---')
             action = 'dive_and_forward'
+
+        elif self.s1 in self.network.get():
+            l.info('--- CALF FOUND SQUID, EATING! ---')
+            action = 'eat_and_forward'
 
         if not action:
             action = 'forward'
@@ -174,7 +213,7 @@ OPTIONS = DotDict({
             }
         },
     },
-# ToDo: OLD - just remove when refactoring is complete
+#    ToDo: OLD - just remove when refactoring is complete
 #    'agents': {
 #        'mom': {
 #            'sensors': [(Squid, 's')],
