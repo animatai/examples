@@ -41,7 +41,7 @@ l = Logging('random_mom_and_calf2', DEBUG_MODE)
 # eat_sing_and_forward <= s1         <= SENSOR(Squid)
 # forward              <= n2         <= NOT(s1, n3, n4)
 # dive_and_forward     <= n3         <= AND(NOT(s1), OR(AND(r1, NOT(r2, r3)), AND(r3, NOT(r1, r2))))
-#                                       AND(NOT(s1), OR(ONE(r1, [r2, r3], ONE(r3, [r1, r2]))))
+#          rewrite using ONE            AND(NOT(s1), OR(ONE(r1, [r2, r3], ONE(r3, [r1, r2]))))
 # up_and_forward       <= n4         <= AND(NOT(s1), NOT(r1, r2, r3))
 #
 #```
@@ -71,21 +71,42 @@ class Mom(Agent):
         # pylint: disable=line-too-long
 
         super().__init__(None, 'mom')
-        self.network = Network()
-        self.s1 = self.network.add_SENSOR_node(Squid)
-        self.r1 = self.network.add_RAND_node(0.3)
-        self.r2 = self.network.add_RAND_node(0.3)
-        self.r3 = self.network.add_RAND_node(0.3)
+        N = self.network = Network()
+        M = self.mnetwork = MotorNetwork(motors, motors_to_action)
+        SENSOR, RAND, AND = N.add_SENSOR_node, N. add_RAND_node, N.add_AND_node
+        NOT, OR = N.add_NOT_node, N.add_OR_node
 
-        self.mnetwork = MotorNetwork(motors, motors_to_action)
+        s1, r1, r2, r3 = SENSOR(Squid), RAND(0.3), RAND(0.3), RAND(0.3)
+        n3 = AND([NOT([s1]), OR([AND([r1, NOT([r2, r3])]), AND([r3, NOT([r1, r2])])])])
+        n4 = AND([NOT([s1]), NOT([r1, r2, r3])])
+        n2 = NOT([s1, n3, n4])
+
+        self.state_to_motor = {frozenset([s1]): frozenset([0]),
+                               frozenset([n2]): frozenset([1]),
+                               frozenset([n3]): frozenset([2]),
+                               frozenset([n4]): frozenset([3])}
 
         # compose applies the functions from right to left
         self.program = compose(do(partial(l.debug, 'Mom mnetwork.update'))
-                               , self.mnetwork.update
+                               , M.update
+                               , do(partial(l.debug, 'Mom state_to_motor'))
+                               , lambda s: self.state_to_motor.get(s)
+                               , do(partial(l.debug, N))
+                               , do(partial(l.debug, 'Mom network.top_active'))
+                               , N.top_active
+                               #, N.update
+                               , do(partial(l.debug, 'Mom unpacked percept'))
+                               , unpack(0)
+                               , do(partial(l.debug, 'Mom percept'))
+                              )
+
+        self.program1 = compose(do(partial(l.debug, 'Mom mnetwork.update'))
+                               , M.update
                                , do(partial(l.debug, 'Mom state_to_motor'))
                                , lambda s: frozenset([0]) if 0 in s else state_to_motor.get(s)
                                , lambda x: do(partial(l.info, '--- MOM FOUND SQUID, SINGING AND EATING! ---'))(x) if 0 in x else x
-                               , self.network.update
+                               , do(partial(l.debug, 'Mom network.update'))
+                               , N.update
                                , do(partial(l.debug, 'Mom unpacked percept'))
                                , unpack(0)
                                , do(partial(l.debug, 'Mom percept'))
