@@ -1,6 +1,6 @@
 # pylint: disable=missing-docstring, global-statement, invalid-name, too-few-public-methods, no-self-use
 #
-# A random Mother cachelot and calf
+# A random mother cachelot and calf
 #
 # Copyright (C) 2017  Jonas Colmsjö, Claes Strannegård
 #
@@ -9,8 +9,8 @@ import random
 
 from ecosystem.agents import Agent
 from ecosystem.network import Network, MotorNetwork
-from toolz.functoolz import compose
-from gzutils.gzutils import DotDict, Logging
+from toolz.functoolz import compose, juxt
+from gzutils.gzutils import DotDict, Logging, unpack
 
 from sea import Sea, Song, Squid
 
@@ -21,14 +21,25 @@ DEBUG_MODE = True
 l = Logging('random_mom_and_calf2', DEBUG_MODE)
 
 # Mom that moves by random until squid is found. Move forward when there is
-# squid and sing.
+# squid and sing. When there is no squid, move forward, upward or dive
+# randomly.
 #
-# eat_sing_and_forward:  s1
-# forward:               n2 <= NOT(s1, n3, n4)
-# dive_and_forward:      n3 <= AND(NOT(s1), OR(AND(r1, NOT(r2, r3)), AND(r3, NOT(r1, r2))))
-#                              AND(NOT(s1), OR(ONE(r1, [r2, r3], ONE(r3, [r1, r2]))))
-# up_and_forward:        n4 <= AND(NOT(s1), NOT(r1, r2, r3))
+# The network consists of one `SENSOR` for `Squid` and three `RAND` (random) nodes
+# each with a probability of 0.3 of being True. The eight states the three
+# RAND nodes generate are mapped to the motors: `forward`, `dive_and_forward`,
+# `up_and_forward`. The `SENSOR` is mapped to the `motor sing_eat_and_forward`.
+# Mapping states to motors is done using a `dict` here.
 #
+# Pseudocode:
+#```
+#                         r1, r2, r3 <= RAND, RAND, RAND
+# eat_sing_and_forward <= s1         <= SENSOR(Squid)
+# forward              <= n2         <= NOT(s1, n3, n4)
+# dive_and_forward     <= n3         <= AND(NOT(s1), OR(AND(r1, NOT(r2, r3)), AND(r3, NOT(r1, r2))))
+#                                       AND(NOT(s1), OR(ONE(r1, [r2, r3], ONE(r3, [r1, r2]))))
+# up_and_forward       <= n4         <= AND(NOT(s1), NOT(r1, r2, r3))
+#
+#```
 
 
 class Mom(Agent):
@@ -62,9 +73,9 @@ class Mom(Agent):
 
         # compose applies the functions from right to left
         self.program = compose(self.mnetwork.update,
-                               lambda s: state_to_motor.get(s, frozenset([0])),
+                               lambda s: frozenset([0]) if frozenset([0]) in s else state_to_motor.get(s)   ,
                                self.network.update,
-                               lambda x: x[0])
+                               lambda x: x[0], unpack(0), l.debug)
 
     def __repr__(self):
         return '<{} ({})>'.format(self.__name__, self.__class__.__name__)
