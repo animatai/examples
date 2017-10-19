@@ -9,6 +9,9 @@ import random
 
 from ecosystem.agents import Agent
 from ecosystem.network import Network, MotorNetwork
+
+from functools import partial
+from toolz.curried import do
 from toolz.functoolz import compose, juxt
 from gzutils.gzutils import DotDict, Logging, unpack
 
@@ -41,6 +44,23 @@ l = Logging('random_mom_and_calf2', DEBUG_MODE)
 #
 #```
 
+# NOTE: This setup is dependent on the order Nodes are added to the network below!
+state_to_motor = {frozenset([1, 2, 3]): frozenset([1]),
+                  frozenset([1, 2]): frozenset([1]),
+                  frozenset([1, 3]): frozenset([1]),
+                  frozenset([2, 3]): frozenset([1]),
+                  frozenset([2]): frozenset([1]),
+                  frozenset([3]): frozenset([3]),
+                  frozenset([1]): frozenset([3]),
+                  frozenset([]): frozenset([2])}
+
+motors = ['sing_eat_and_forward', 'forward', 'dive_and_forward', 'up_and_forward', 'eat_and_forward']
+motors_to_action = {frozenset([0]): 'sing_eat_and_forward',
+                    frozenset([1]): 'forward',
+                    frozenset([2]): 'dive_and_forward',
+                    frozenset([3]): 'up_and_forward',
+                    frozenset([4]): 'eat_and_forward',
+                    '*': '-'}
 
 class Mom(Agent):
 
@@ -52,55 +72,22 @@ class Mom(Agent):
         self.r2 = self.network.add_RAND_node(0.3)
         self.r3 = self.network.add_RAND_node(0.3)
 
-        state_to_motor = {frozenset([1, 2, 3]): frozenset([1]),
-                          frozenset([1, 2]): frozenset([1]),
-                          frozenset([1, 3]): frozenset([1]),
-                          frozenset([2, 3]): frozenset([1]),
-                          frozenset([2]): frozenset([1]),
-                          frozenset([3]): frozenset([3]),
-                          frozenset([1]): frozenset([3]),
-                          frozenset([]): frozenset([2])}
-
-
-        motors = ['sing_eat_and_forward', 'forward', 'dive_and_forward', 'up_and_forward']
-        motors_to_action = {frozenset([0]): 'sing_eat_and_forward',
-                            frozenset([1]): 'forward',
-                            frozenset([2]): 'dive_and_forward',
-                            frozenset([3]): 'up_and_forward',
-                            '*': '-'}
-
         self.mnetwork = MotorNetwork(motors, motors_to_action)
 
         # compose applies the functions from right to left
-        self.program = compose(self.mnetwork.update,
-                               lambda s: frozenset([0]) if frozenset([0]) in s else state_to_motor.get(s)   ,
-                               self.network.update,
-                               lambda x: x[0], unpack(0), l.debug)
+        self.program = compose(do(partial(l.debug, 'Mom mnetwork.update'))
+                               , self.mnetwork.update
+                               , do(partial(l.debug, 'Mom state_to_motor'))
+                               , lambda s: frozenset([0]) if 0 in s else state_to_motor.get(s)
+                               , lambda x: do(partial(l.info, '--- MOM FOUND SQUID, SINGING AND EATING! ---'))(x) if 0 in x else x
+                               , self.network.update
+                               , do(partial(l.debug, 'Mom unpacked percept'))
+                               , unpack(0)
+                               , do(partial(l.debug, 'Mom percept'))
+                               )
 
     def __repr__(self):
         return '<{} ({})>'.format(self.__name__, self.__class__.__name__)
-
-    def program1(self, percept):
-        action = None
-
-        # unpack the percepts and rewards: ([(Thing|NonSpatial, radius)], rewards)
-        percepts, rewards = percept
-
-        self.network.update(percepts)
-        if self.s1 in self.network.get():
-            l.info('--- MOM FOUND SQUID, SINGING AND EATING! ---')
-            action = 'sing_eat_and_forward'
-
-        if not action:
-            action = 'forward'
-            rand = random.random()
-            if rand < 1/3:
-                action = 'dive_and_forward'
-            elif rand < 2/3:
-                action = 'up_and_forward'
-
-
-        return action
 
 
 # Calf that will by random until hearing song. Dive when hearing song.
@@ -112,37 +99,34 @@ class Calf(Agent):
         super().__init__(None, 'calf')
         self.network = Network()
         self.s1 = self.network.add_SENSOR_node(Squid)
+
+        self.r1 = self.network.add_RAND_node(0.3)
+        self.r2 = self.network.add_RAND_node(0.3)
+        self.r3 = self.network.add_RAND_node(0.3)
+
         self.s2 = self.network.add_SENSOR_node(Song)
 
+        self.mnetwork = MotorNetwork(motors, motors_to_action)
+
+        def check(x):
+            l.debug(x)
+
+        # compose applies the functions from right to left
+        self.program = compose(do(partial(l.debug, 'Calf mnetwork.update'))
+                               , self.mnetwork.update
+                               , do(partial(l.debug, 'Calf state_to_motor'))
+                               , lambda s: frozenset([4]) if 0 in s else (frozenset([2]) if 4 in s else state_to_motor.get(s))
+                               , lambda x: do(partial(l.info, '--- CALF HEARD SONG, DIVING! ---'))(x) if 4 in x else x
+                               , lambda x: do(partial(l.info, '--- CALF FOUND SQUID, EATING! ---'))(x) if 0 in x else x
+                               , do(partial(l.debug, 'Calf network.update'))
+                               , self.network.update
+                               , do(partial(l.debug, 'Calf unpacked percept'))
+                               , unpack(0)
+                               , do(partial(l.debug, 'Calf percept'))
+                               )
 
     def __repr__(self):
         return '<{} ({})>'.format(self.__name__, self.__class__.__name__)
-
-    def program(self, percept):
-        action = None
-
-        # unpack the percepts tuple: ([Thing|NonSpatial], rewards)
-        percepts, rewards = percept
-
-        # sensor tuple = (Squid sensor, Song sensor)
-        self.network.update(percepts)
-        if self.s2 in self.network.get():
-            l.info('--- CALF HEARD SONG, DIVING! ---')
-            action = 'dive_and_forward'
-
-        elif self.s1 in self.network.get():
-            l.info('--- CALF FOUND SQUID, EATING! ---')
-            action = 'eat_and_forward'
-
-        if not action:
-            action = 'forward'
-            rand = random.random()
-            if  rand < 1/3:
-                action = 'dive_and_forward'
-            elif rand < 2/3:
-                action = 'up_and_forward'
-
-        return action
 
 
 # Main
