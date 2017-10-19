@@ -6,16 +6,18 @@
 #
 
 import random
+from functools import partial
 
 from ecosystem.agents import Agent
 from ecosystem.network import Network, MotorNetwork
 
-from functools import partial
 from toolz.curried import do
-from toolz.functoolz import compose, juxt
-from gzutils.gzutils import DotDict, Logging, unpack
+from toolz.functoolz import compose
+from gzutils.gzutils import Logging, unpack
 
 from sea import Sea, Song, Squid
+from random_mom_and_calf_config import mom_start_pos, calf_start_pos, OPTIONS
+
 
 # Setup logging
 # =============
@@ -44,7 +46,7 @@ l = Logging('random_mom_and_calf2', DEBUG_MODE)
 #
 #```
 
-# NOTE: This setup is dependent on the order Nodes are added to the network below!
+# NOTE: This setup is dependent on the order the nodes are added to the network below!
 state_to_motor = {frozenset([1, 2, 3]): frozenset([1]),
                   frozenset([1, 2]): frozenset([1]),
                   frozenset([1, 3]): frozenset([1]),
@@ -54,7 +56,8 @@ state_to_motor = {frozenset([1, 2, 3]): frozenset([1]),
                   frozenset([1]): frozenset([3]),
                   frozenset([]): frozenset([2])}
 
-motors = ['sing_eat_and_forward', 'forward', 'dive_and_forward', 'up_and_forward', 'eat_and_forward']
+motors = ['sing_eat_and_forward', 'forward', 'dive_and_forward',
+          'up_and_forward', 'eat_and_forward']
 motors_to_action = {frozenset([0]): 'sing_eat_and_forward',
                     frozenset([1]): 'forward',
                     frozenset([2]): 'dive_and_forward',
@@ -65,6 +68,8 @@ motors_to_action = {frozenset([0]): 'sing_eat_and_forward',
 class Mom(Agent):
 
     def __init__(self):
+        # pylint: disable=line-too-long
+
         super().__init__(None, 'mom')
         self.network = Network()
         self.s1 = self.network.add_SENSOR_node(Squid)
@@ -84,7 +89,7 @@ class Mom(Agent):
                                , do(partial(l.debug, 'Mom unpacked percept'))
                                , unpack(0)
                                , do(partial(l.debug, 'Mom percept'))
-                               )
+                              )
 
     def __repr__(self):
         return '<{} ({})>'.format(self.__name__, self.__class__.__name__)
@@ -94,8 +99,11 @@ class Mom(Agent):
 # The world will not permit diving below the bottom surface, so it will
 # just move forward.
 class Calf(Agent):
+    # pylint: disable=too-many-instance-attributes
 
     def __init__(self):
+        # pylint: disable=line-too-long
+
         super().__init__(None, 'calf')
         self.network = Network()
         self.s1 = self.network.add_SENSOR_node(Squid)
@@ -107,9 +115,6 @@ class Calf(Agent):
         self.s2 = self.network.add_SENSOR_node(Song)
 
         self.mnetwork = MotorNetwork(motors, motors_to_action)
-
-        def check(x):
-            l.debug(x)
 
         # compose applies the functions from right to left
         self.program = compose(do(partial(l.debug, 'Calf mnetwork.update'))
@@ -123,129 +128,10 @@ class Calf(Agent):
                                , do(partial(l.debug, 'Calf unpacked percept'))
                                , unpack(0)
                                , do(partial(l.debug, 'Calf percept'))
-                               )
+                              )
 
     def __repr__(self):
         return '<{} ({})>'.format(self.__name__, self.__class__.__name__)
-
-
-# Main
-# =====
-
-# left: (-1,0), right: (1,0), up: (0,-1), down: (0,1)
-#MOVES = [(0, -1), (0, 1)]
-
-terrain = ('WWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWW\n' +
-           'WWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWW\n' +
-           'WWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWW\n' +
-           'WWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWW\n' +
-           'WWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWW\n' +
-           'WWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWW\n' +
-           'WWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWW')
-
-# the mother and calf have separate and identical lanes
-things = ('XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX\n' +
-          '                                                  \n' +
-          '  ss                                      ss      \n' +
-          'XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX\n' +
-          '                                                  \n' +
-          '  ss                                      ss      \n' +
-          'XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX')
-
-# the mother and calf have separate and identical lanes
-exogenous_things = ('                                                  \n' +
-                    '                                                  \n' +
-                    '                                   ss             \n' +
-                    '                                                  \n' +
-                    '                                                  \n' +
-                    '                                   ss             \n' +
-                    '                                                  ')
-
-
-mom_start_pos = (0, 1)
-calf_start_pos = (0, 4)
-
-# `motors` can perform several `actions`. The Sea Environment has four available
-# `actions`: `eat`, `down`, `up`, `forward`. There is also one `nsaction` which is `sing`
-# `sensors` are boolean variables indicating percepts (`Things` of different kinds)
-# that are perceived. Active `sensors` are sent as input to the `program`
-OPTIONS = DotDict({
-    'terrain': terrain.split('\n'),
-    'things': things.split('\n'),
-    'exogenous_things': exogenous_things.split('\n'),
-    'exogenous_things_prob': 0.01,
-    'objectives': {'energy': 1.0},
-    'rewards':{
-        'sing_eat_and_forward': {
-            Squid: {
-                'energy': 0.1
-            },
-            None: {
-                'energy': -0.05
-            }
-        },
-        'eat_and_forward': {
-            Squid: {
-                'energy': 0.1
-            },
-            None: {
-                'energy': -0.05
-            }
-        },
-        'dive_and_forward': {
-            None: {
-                'energy': -0.002
-            }
-        },
-        'up_and_forward': {
-            None: {
-                'energy': -0.002
-            }
-        },
-        'forward': {
-            None: {
-                'energy': -0.001
-            }
-        },
-    },
-#    ToDo: OLD - just remove when refactoring is complete
-#    'agents': {
-#        'mom': {
-#            'sensors': [(Squid, 's')],
-#            'motors': [('eat_and_forward', ['eat', 'forward']),
-#                       ('forward', ['forward']),
-#                       ('dive_and_forward', ['down', 'forward']),
-#                       ('up_and_forward', ['up', 'forward']),
-#                       ('sing', ['sing'])
-#                      ],
-#        },
-#        'calf': {
-#            'sensors': [(Squid, 's'), (Song, 'S')],
-#            'motors': [('eat_and_forward', ['eat', 'forward']),
-#                       ('forward', ['forward']),
-#                       ('dive_and_forward', ['down', 'forward']),
-#                       ('up_and_forward', ['up', 'forward'])
-#                      ],
-#        }
-#    },
-    'wss_cfg': {
-        'numTilesPerSquare': (1, 1),
-        'drawGrid': True,
-        'randomTerrain': 0,
-        'agents': {
-            'mom': {
-                'name': 'M',
-                'pos': mom_start_pos,
-                'hidden': False
-            },
-            'calf': {
-                'name': 'c',
-                'pos': calf_start_pos,
-                'hidden': False
-            }
-        }
-    }
-})
 
 
 # Main

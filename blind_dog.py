@@ -12,7 +12,6 @@ from ecosystem.agents import Agent, Thing, Direction, NonSpatial, XYEnvironment
 from ecosystem.utils import vector_add
 
 
-
 # Setup logging
 # =============
 
@@ -173,14 +172,15 @@ class BlindDog(Agent):
 
 # Returns an action based on it's percepts
 def program(percept):
+    # pylint: disable=redefined-argument-from-local
 
     # unpack the percepts tuple: ([Thing|NonSpatial], rewards)
-    percepts, rewards = percept
+    percepts, _ = percept
 
     action = 'bark' if random.random() < 0.25 else 'Forward'
 
     for percept in percepts:
-        object_, radius = percept
+        object_, _2 = percept
         if isinstance(object_, Food):
             l.info('-- EATING ---')
             action = 'eat'
@@ -207,6 +207,9 @@ def program(percept):
 # _=param
 def run(wss=None, steps=None, seed=None):
     steps = int(steps) if steps else 10
+
+    random.seed(seed)
+
     l.debug('Running blind_dog ', steps, ' steps')
 
     options = OPTIONS

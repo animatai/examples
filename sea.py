@@ -6,7 +6,7 @@
 #
 
 from ecosystem.agents import Thing, Obstacle, Direction, NonSpatial, XYEnvironment
-from gzutils.gzutils import DotDict, Logging, get_output_dir, save_csv_file
+from gzutils.gzutils import DotDict, Logging
 
 
 # Setup constants and logging
@@ -79,7 +79,9 @@ class Sea(XYEnvironment):
         l.info(agent.__name__, 'alive:', agent.alive,
                ', status:', agent.status,
                ', rewards:', rewards,
-               ', env_history:', [self.environment_history[cls][len(self.environment_history[cls])-1] for cls in self.save_history_for])
+               ', env_history:', [self.environment_history[cls]
+                                  [len(self.environment_history[cls])-1]
+                                  for cls in self.save_history_for])
 
         return rewards
 

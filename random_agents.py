@@ -60,6 +60,7 @@ def random_move(from_pos):
 
 def run(wss_=None, steps=None, seed=None):
     steps = int(steps) if steps else 10
+    random.seed(seed)
 
     wss_.send_init(CFG)
     for _ in range(0, steps):
