@@ -87,7 +87,7 @@ class Mom(Agent):
                                , do(partial(l.debug, 'Mom state_to_motor'))
                                , state_to_motor.get
                                , do(partial(l.debug, N))
-                               , do(partial(l.debug, 'Mom network.filter'))
+                               , do(partial(l.debug, 'Mom filter interesting states'))
                                , lambda s: s & {s1, n2, n3, n4}
                                , do(partial(l.debug, 'Mom network.update'))
                                , N.update
