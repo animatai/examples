@@ -1,4 +1,4 @@
-animats==0.0.15
+animatai==0.0.20
 astroid==1.5.3
 asyncio==3.4.3
 functoolz==0.4
