@@ -63,7 +63,7 @@ motors_to_action = {sing_eat_and_forward: 'sing_eat_and_forward',
 class Mom(Agent):
 
     def __init__(self):
-        # pylint: disable=line-too-long
+        # pylint: disable=line-too-long, too-many-locals
 
         super().__init__(None, 'mom')
         N = Network()
@@ -85,7 +85,7 @@ class Mom(Agent):
         self.program = compose(do(partial(l.debug, 'Mom mnetwork.update'))
                                , M.update
                                , do(partial(l.debug, 'Mom state_to_motor'))
-                               , lambda s: state_to_motor.get(s)
+                               , state_to_motor.get
                                , do(partial(l.debug, N))
                                , do(partial(l.debug, 'Mom network.filter'))
                                , lambda s: s & {s1, n2, n3, n4}
@@ -119,13 +119,13 @@ class Calf(Agent):
 
         M = MotorNetwork(motors, motors_to_action)
 
-        state_to_motor = {frozenset([1, 2, 3]): forward,
-                          frozenset([1, 2]): forward,
-                          frozenset([1, 3]): forward,
-                          frozenset([2, 3]): forward,
-                          frozenset([2]): forward,
-                          frozenset([3]): up_and_forward,
-                          frozenset([1]): up_and_forward,
+        state_to_motor = {frozenset([r1, r2, r3]): forward,
+                          frozenset([r1, r2]): forward,
+                          frozenset([r1, r3]): forward,
+                          frozenset([r2, r3]): forward,
+                          frozenset([r2]): forward,
+                          frozenset([r3]): up_and_forward,
+                          frozenset([r1]): up_and_forward,
                           frozenset([]): dive_and_forward}
 
         # compose applies the functions from right to left
