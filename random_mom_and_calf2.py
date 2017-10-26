@@ -22,7 +22,7 @@ from random_mom_and_calf_config import mom_start_pos, calf_start_pos, OPTIONS
 # Setup logging
 # =============
 
-DEBUG_MODE = False
+DEBUG_MODE = True
 l = Logging('random_mom_and_calf2', DEBUG_MODE)
 
 # Mom that moves by random until squid is found. Move forward when there is
@@ -66,9 +66,11 @@ class Mom(Agent):
         # pylint: disable=line-too-long, too-many-locals
 
         super().__init__(None, 'mom')
+
+        N = Network(None, {'energy': 1.0})
+        self.status = N.get_NEEDs()
         self.status_history = {'energy':[]}
 
-        N = Network()
         M = MotorNetwork(motors, motors_to_action)
         SENSOR, RAND, AND = N.add_SENSOR_node, N.add_RAND_node, N.add_AND_node
         NOT, OR = N.add_NOT_node, N.add_OR_node
@@ -93,8 +95,6 @@ class Mom(Agent):
                                , lambda s: s & {s1, n2, n3, n4}
                                , do(partial(l.debug, 'Mom network.update'))
                                , N.update
-                               , do(partial(l.debug, 'Mom unpacked percept'))
-                               , unpack(0)
                                , do(partial(l.debug, 'Mom percept'))
                               )
 
@@ -112,9 +112,11 @@ class Calf(Agent):
         # pylint: disable=line-too-long
 
         super().__init__(None, 'calf')
+
+        N = Network(None, {'energy': 1.0})
+        self.status = N.get_NEEDs()
         self.status_history = {'energy':[]}
 
-        N = Network()
         s1 = N.add_SENSOR_node(Squid)
         r1 = N.add_RAND_node(0.3)
         r2 = N.add_RAND_node(0.3)
@@ -136,13 +138,12 @@ class Calf(Agent):
         self.program = compose(do(partial(l.debug, 'Calf mnetwork.update'))
                                , M.update
                                , do(partial(l.debug, 'Calf state_to_motor'))
-                               , lambda s: eat_and_forward if s1 in s else (dive_and_forward if s2 in s else state_to_motor.get(s))
+                               , lambda s: eat_and_forward if s1 in s else (dive_and_forward if s2 in s else up_and_forward)
+                               #, lambda s: eat_and_forward if s1 in s else (dive_and_forward if s2 in s else state_to_motor.get(s))
                                , lambda x: do(partial(l.info, '--- CALF HEARD SONG, DIVING! ---'))(x) if s2 in x else x
                                , lambda x: do(partial(l.info, '--- CALF FOUND SQUID, EATING! ---'))(x) if s1 in x else x
                                , do(partial(l.debug, 'Calf network.update'))
                                , N.update
-                               , do(partial(l.debug, 'Calf unpacked percept'))
-                               , unpack(0)
                                , do(partial(l.debug, 'Calf percept'))
                               )
 
