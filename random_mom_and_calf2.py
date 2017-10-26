@@ -8,8 +8,8 @@
 import random
 from functools import partial
 
-from ecosystem.agents import Agent
-from ecosystem.network import Network, MotorNetwork
+from animatai.agents import Agent
+from animatai.network import Network, MotorNetwork
 
 from toolz.curried import do
 from toolz.functoolz import compose
@@ -66,6 +66,8 @@ class Mom(Agent):
         # pylint: disable=line-too-long, too-many-locals
 
         super().__init__(None, 'mom')
+        self.status_history = {'energy':[]}
+
         N = Network()
         M = MotorNetwork(motors, motors_to_action)
         SENSOR, RAND, AND = N.add_SENSOR_node, N.add_RAND_node, N.add_AND_node
@@ -110,6 +112,8 @@ class Calf(Agent):
         # pylint: disable=line-too-long
 
         super().__init__(None, 'calf')
+        self.status_history = {'energy':[]}
+
         N = Network()
         s1 = N.add_SENSOR_node(Squid)
         r1 = N.add_RAND_node(0.3)

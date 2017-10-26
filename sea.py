@@ -5,7 +5,7 @@
 # Copyright (C) 2017  Jonas Colmsjö, Claes Strannegård
 #
 
-from ecosystem.agents import Thing, Obstacle, Direction, NonSpatial, XYEnvironment
+from animatai.agents import Thing, Obstacle, Direction, NonSpatial, XYEnvironment
 from gzutils.gzutils import DotDict, Logging
 
 
@@ -48,45 +48,8 @@ class Sea(XYEnvironment):
             res = res or self.environment_history[cls][i] < self.environment_history[cls][i - 1]
         return res
 
-    # reward dict:
-    #     'reward':{
-    #        'eat_and_forward': {
-    #            Squid: { 'energy': 0.1 },
-    #            None: { 'energy': -0.05 }
-    #        },
-    #
-    def calc_performance(self, agent, action):
-        # pylint: disable=len-as-condition
-
-        rewards = {}
-        if not hasattr(agent, 'status'):
-            agent.status = self.options.objectives.copy()
-
-        for rewarded_action, object_and_objectives in self.options.rewards.items():
-            if action == rewarded_action:
-                for rewarded_thing, obj_and_reward in object_and_objectives.items():
-                    if rewarded_thing and len(self.list_things_at(agent.location, rewarded_thing)):
-                        for obj, rew in obj_and_reward.items():
-                            agent.status[obj] += rew
-                            rewards[obj] = rew
-                            agent.alive = agent.alive and agent.status[obj] > 0
-                    elif rewarded_thing is None:
-                        for obj, rew in obj_and_reward.items():
-                            agent.status[obj] += rew
-                            rewards[obj] = rew
-                            agent.alive = agent.alive and agent.status[obj] > 0
-
-        l.info(agent.__name__, 'alive:', agent.alive,
-               ', status:', agent.status,
-               ', rewards:', rewards,
-               ', env_history:', [self.environment_history[cls]
-                                  [len(self.environment_history[cls])-1]
-                                  for cls in self.save_history_for])
-
-        return rewards
-
     def execute_action(self, agent, action, time):
-        self.show_message((agent.__name__ + ' performing ' + action + ' at location ' +
+        self.show_message((agent.__name__ + ' performing ' + str(action) + ' at location ' +
                            str(agent.location) + ' and time ' + str(time)))
         def up():
             agent.direction += Direction.L

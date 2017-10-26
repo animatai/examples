@@ -8,8 +8,8 @@
 import random
 
 from gzutils.gzutils import DotDict, Logging
-from ecosystem.agents import Agent, Thing, Direction, NonSpatial, XYEnvironment
-from ecosystem.utils import vector_add
+from animatai.agents import Agent, Thing, Direction, NonSpatial, XYEnvironment
+from animatai.utils import vector_add
 
 
 # Setup logging

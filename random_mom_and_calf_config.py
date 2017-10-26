@@ -5,7 +5,7 @@
 # Copyright (C) 2017  Jonas Colmsjö, Claes Strannegård
 #
 
-from gzutils.gzutils import DotDict
+from gzutils.gzutils import DotDict, get_output_dir
 
 from sea import Squid
 
@@ -44,6 +44,7 @@ calf_start_pos = (0, 4)
 # `sensors` are boolean variables indicating percepts (`Things` of different kinds)
 # that are perceived. Active `sensors` are sent as input to the `program`
 OPTIONS = DotDict({
+    'output_path': get_output_dir(file=__file__),
     'terrain': terrain.split('\n'),
     'things': things.split('\n'),
     'exogenous_things': exogenous_things.split('\n'),
@@ -73,7 +74,7 @@ OPTIONS = DotDict({
         },
         'up_and_forward': {
             None: {
-                'energy': -0.002
+                'energy': -0.001
             }
         },
         'forward': {

@@ -9,7 +9,7 @@
 
 import unittest
 
-from ecosystem.agents import Agent, Obstacle
+from animatai.agents import Agent, Obstacle
 from gzutils.gzutils import Logging
 
 from sea import Sea, Squid

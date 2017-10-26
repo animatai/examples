@@ -7,7 +7,7 @@
 
 import random
 
-from ecosystem.agents import Agent
+from animatai.agents import Agent
 from gzutils.gzutils import Logging
 
 from sea import Sea, Song, Squid
