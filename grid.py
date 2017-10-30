@@ -10,9 +10,14 @@
 import random
 import unittest
 
-from gzutils.gzutils import Logging, get_output_dir, save_csv_file
+from functools import partial
+from toolz.curried import do
+from toolz.functoolz import compose
+from gzutils.gzutils import DotDict, Logging, get_output_dir, save_csv_file
 
 from animatai.mdp import MDP
+from animatai.agents import Agent, Obstacle, Thing, XYEnvironment
+from animatai.network import MotorNetwork, Network
 from animatai.network_rl import MotorModel, SensorModel, NetworkDP, NetworkQLearningAgent
 
 
@@ -127,13 +132,6 @@ motors = ['^', 'v', '<', '>']
 north, south, east, west = frozenset([0]), frozenset([1]), frozenset([2]), frozenset([3])
 motors_to_action = {north: '^', south: 'v', east: '>', west: '<', '*': '-'}
 
-# NOTE: Should remove the need for motor_model and sensor_model in NDP?
-# These are only there for debugging purposes, so they should be optional
-def motor_model(motor):
-    if motor in motors_to_action:
-        return motors_to_action.get(motor)
-    return motors_to_action.get('*')
-
 landmark_to_state = {frozenset([0]): 'a',
                      frozenset([1]): 'b',
                      frozenset([2]): 'c',
@@ -162,11 +160,13 @@ class GridAgent(Agent):
         water, energy = SENSOR(Water), SENSOR(Energy)
         landmark_sensor = []
         for i in range(0, 10):
-            landmark_sensor.append(SENSOR(Landmark, i))
+            landmark_sensor.append(SENSOR(Landmark, str(i)))
 
         M = MotorNetwork(motors, motors_to_action)
 
-        self.ndp = NetworkDP(init, self.status, motor_model, .9, sensor_model)
+        # TODO: init=None, should remove init from NetworkDP
+        #       model_model=None using M.motors_for_all_actions() instead
+        self.ndp = NetworkDP(None, self.status, None, .9, sensor_model, M.motors_for_all_actions())
         q_agent = NetworkQLearningAgent(self.ndp, Ne=5, Rplus=2,
                                         alpha=lambda n: 60./(59+n),
                                         delta=0.5,
@@ -202,7 +202,7 @@ def run(wss=None, steps=None, seed=None):
     grid = Grid(options)
     grid_agent = GridAgent(options.objectives)
     grid.add_thing(grid_agent, agent_start_pos)
-    env.run(steps)
+    grid.run(steps)
 
 if __name__ == "__main__":
     run()
