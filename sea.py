@@ -26,8 +26,6 @@ class Squid(Thing):
 class Song(NonSpatial):
     pass
 
-# motors are executed instead of single actions. motors consists of several actions
-# and setup in the options for the agent.
 class Sea(XYEnvironment):
 
     # pylint: disable=arguments-differ
