@@ -228,6 +228,10 @@ def run(wss=None, steps=None, seed=None):
     l.info('2: X,13, X,15,16, X')
     l.info('3: X,19,20,21,22, X')
     l.info('4: X, X, X, X, X, X')
+    l.info('The SENSORS will have these numbers:')
+    l.info('2, 3, 4, {0,5}')
+    l.info('6,    7, {1,8}')
+    l.info('9,10,11,    12')
 
     for status in ['energy', 'water']:
         l.info('----- ' + status + '------')
