@@ -16,6 +16,7 @@ from toolz.functoolz import compose
 from gzutils.gzutils import DotDict, Logging, get_output_dir, save_csv_file
 
 from animatai.mdp import MDP
+from animatai.utils import vector_add
 from animatai.agents import Agent, Obstacle, Thing, XYEnvironment
 from animatai.network import MotorNetwork, Network
 from animatai.network_rl import MotorModel, SensorModel, NetworkDP, NetworkQLearningAgent
@@ -71,6 +72,7 @@ exogenous_things = ('      \n' +
 
 agent_start_pos = (1, 3)
 
+# rewards: {action: {percept: {objective: reward}}}
 OPTIONS = DotDict({
     'output_path': get_output_dir(file=__file__),
     'terrain': terrain.split('\n'),
@@ -81,10 +83,16 @@ OPTIONS = DotDict({
     'rewards':{
         None: {
             Energy: {
-                'energy': 0.1
+                'energy': 0.1,
+                'water': 0.0
             },
             Water: {
+                'energy': 0.0,
                 'water': 0.1
+            },
+            None: {
+                'energy': 0.0,
+                'water': 0.0
             }
         }
     },
@@ -132,6 +140,7 @@ motors = ['^', 'v', '<', '>']
 north, south, east, west = frozenset([0]), frozenset([1]), frozenset([2]), frozenset([3])
 motors_to_action = {north: '^', south: 'v', east: '>', west: '<', '*': '-'}
 
+'''
 landmark_to_state = {frozenset([0]): 'a',
                      frozenset([1]): 'b',
                      frozenset([2]): 'c',
@@ -144,10 +153,11 @@ landmark_to_state = {frozenset([0]): 'a',
                      frozenset([9]): 'j',
                      frozenset([10]): 'k'}
 sensor_model = landmark_to_state
+'''
 
 class GridAgent(Agent):
 
-    def __init__(self, objectives):
+    def __init__(self, objectives, landmarks):
         # pylint: disable=line-too-long, too-many-locals
 
         super().__init__(None, 'GridAgent')
@@ -158,15 +168,19 @@ class GridAgent(Agent):
         self.status_history = {'energy':[], 'water': []}
 
         water, energy = SENSOR(Water), SENSOR(Energy)
+
+        # create one SENSOR for each square
         landmark_sensor = []
-        for i in range(0, 10):
-            landmark_sensor.append(SENSOR(Landmark, str(i)))
+        for lm in landmarks:
+            landmark_sensor.append(SENSOR(Landmark, lm))
 
         M = MotorNetwork(motors, motors_to_action)
 
-        # TODO: init=None, should remove init from NetworkDP
-        #       model_model=None using M.motors_for_all_actions() instead
-        self.ndp = NetworkDP(None, self.status, None, .9, sensor_model, M.motors_for_all_actions())
+        # TODO: init=agent_start_pos, using a location here (only for debugging),
+        #            is a state when MDP:s are used
+        #       motor_model=None using M.motors_for_all_actions() instead
+        #       sensor_model=None (used with MDP:s not proper environments)
+        self.ndp = NetworkDP(agent_start_pos, self.status, None, .9, None, M.motors_for_all_actions())
         q_agent = NetworkQLearningAgent(self.ndp, Ne=5, Rplus=2,
                                         alpha=lambda n: 60./(59+n),
                                         delta=0.5,
@@ -200,7 +214,8 @@ def run(wss=None, steps=None, seed=None):
     options.wss = wss
 
     grid = Grid(options)
-    grid_agent = GridAgent(options.objectives)
+    landmarks = [lm.__name__ for lm in grid.list_things(Landmark)]
+    grid_agent = GridAgent(options.objectives, landmarks)
     grid.add_thing(grid_agent, agent_start_pos)
     grid.run(steps)
 
