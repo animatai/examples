@@ -192,19 +192,47 @@ class GridAgent(Agent):
                                , do(partial(l.debug, 'percept'))
                                , lambda x: do(partial(l.debug, '*** ENERY FOUND ***'))(x) if 'energy' in x[1] and x[1]['energy'] > 0.0 else x
                                , lambda x: do(partial(l.debug, '*** WATER FOUND ***'))(x) if 'water' in x[1] and x[1]['water'] > 0.0 else x
+                               , do(self.printU)
                               )
 
     def __repr__(self):
         return '<{} ({})>'.format(self.__name__, self.__class__.__name__)
 
 
+    def printU(self, _):
+        for status in ['energy', 'water']:
+            l.info('----- ' + status + '------')
+            U, pi = self.q_agent.Q_to_U_and_pi()[status]
+
+            l.info('Utilities:')
+            U = {k: '{0:.3f}'.format(v) for k, v in U.items()}
+            print_grid(U)
+            l.info('Policy:')
+            print_grid(pi)
+
 # Main
 # =====
 
 def print_grid(U):
-    l.info(U[0:4])
-    l.info(U[4:7])
-    l.info(U[7:11])
+    res = ''
+    for k in ['7','8','9','10']:
+        res += (str(U[k]) if k in U else '-') + '\t'
+    l.info(res)
+    res = ''
+    for k in ['13','X','15','16']:
+        res += (str(U[k]) if k in U else '-') + '\t'
+    l.info(res)
+    res = ''
+    for k in ['19','20','21','22']:
+        res += (str(U[k]) if k in U else '-') + '\t'
+    l.info(res)
+
+    res = ''
+    for k in U:
+        if k not in ['7','8','9','10', '13','X','15','16', '19','20','21','22']:
+            res += str(k) + ':' + str(U[k]) + '\t'
+    l.info(res)
+
 
 def run(wss=None, steps=None, seed=None):
     steps = int(steps) if steps else 20
@@ -229,22 +257,9 @@ def run(wss=None, steps=None, seed=None):
     l.info('3: X,19,20,21,22, X')
     l.info('4: X, X, X, X, X, X')
     l.info('The SENSORS will have these numbers:')
-    l.info('2, 3, 4, {0,5}')
-    l.info('6,    7, {1,8}')
-    l.info('9,10,11,    12')
-
-    for status in ['energy', 'water']:
-        l.info('----- ' + status + '------')
-        U, pi = grid_agent.q_agent.Q_to_U_and_pi()[status]
-
-        l.info(U)
-        l.info(pi)
-
-        # print the utilities and the policy also
-        U1 = sorted(U.items(), key=lambda x: int(x[0] if type(x[0]) is str else 99))
-        pi1 = sorted(pi.items(), key=lambda x: int(x[0] if type(x[0]) is str else 99))
-        print_grid(U1)
-        print_grid(pi1)
+    l.info('      2, 3, 4,{1,5}')
+    l.info('      6,    7,{0,8}')
+    l.info('      9,10,11,12')
 
 
     l.info('q_agent:', grid_agent.q_agent)

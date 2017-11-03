@@ -14,5 +14,7 @@ pylint *.py test/*.py
 pycco *.py
 
 # Run the unit tests
-export PYTHONPATH=test
+# Run a specific unittest manually like this:
+# export PYTHONPATH=test
+# python -m unittest test_XXX
 python -m unittest discover test
