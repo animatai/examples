@@ -78,21 +78,21 @@ OPTIONS = DotDict({
     'terrain': terrain.split('\n'),
     'things': things.split('\n'),
     'exogenous_things': exogenous_things.split('\n'),
-    'exogenous_things_prob': 0.1,
+    'exogenous_things_prob': 0.01,
     'objectives': {'energy': 1.0, 'water': 1.0},
     'rewards':{
         None: {
             Energy: {
                 'energy': 1.0,
-                'water': -0.001
+                'water': -0.005
             },
             Water: {
-                'energy': -0.001,
+                'energy': -0.005,
                 'water': 1.0
             },
             None: {
-                'energy': -0.001,
-                'water': -0.001
+                'energy': -0.005,
+                'water': -0.005
             }
         }
     },
@@ -147,7 +147,7 @@ class Grid(XYEnvironment):
 # Motors and actions
 motors = ['^', 'v', '<', '>']
 north, south, east, west = frozenset([0]), frozenset([1]), frozenset([2]), frozenset([3])
-motors_to_action = {north: '^', south: 'v', east: '>', west: '<'} #, '*': '-'}
+motors_to_action = {north: '^', south: 'v', east: '>', west: '<', '*': '-'}
 motor_model = MotorModel(motors_to_action)
 
 class GridAgent(Agent):
@@ -176,8 +176,9 @@ class GridAgent(Agent):
         #            is a state when MDP:s are used
         #       sensor_model=None (used with MDPs but not in proper environments)
         self.ndp = NetworkDP(agent_start_pos, self.status, motor_model, .9, network_model)
-        self.q_agent = NetworkQLearningAgent(self.ndp, Ne=5, Rplus=2,
+        self.q_agent = NetworkQLearningAgent(self.ndp, Ne=0, Rplus=2,
                                         alpha=lambda n: 60./(59+n),
+                                        epsilon=0.2,
                                         delta=0.5)
 
 
