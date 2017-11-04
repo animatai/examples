@@ -82,15 +82,15 @@ OPTIONS = DotDict({
         None: {
             Energy: {
                 'energy': 1.0,
-                'water': -0.005
+                'water': -0.001
             },
             Water: {
-                'energy': -0.005,
+                'energy': -0.001,
                 'water': 1.0
             },
             None: {
-                'energy': -0.005,
-                'water': -0.005
+                'energy': -0.001,
+                'water': -0.001
             }
         }
     },
