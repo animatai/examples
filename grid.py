@@ -2,6 +2,19 @@
 #
 # Copyright (C) 2017  Jonas Colmsjö, Claes Strannegård
 #
+# A `GridAgent` living in a `Grid` environment where each square has a `Landmark`
+# object with a unique id. The `GridAgent` has two `NEEDs`: `Energy` and `Water`.
+# `Energy` is placed in square 'd' and `Water` in square 'g'. The agent has `SENSORs`
+# for `Landmark` objects and `Energy` and `Water`.
+#
+# +------+------+------+------+
+# |   a  |   b  |   c  |   d  |
+# +------+------+------+------+
+# |   e  |      |   f  |   g  |
+# +------+------+------+------+
+# |   h  |   i  |   j  |   k  |
+# +------+------+------+------+
+
 
 
 # Imports
@@ -42,14 +55,6 @@ class Water(Thing):
 class Landmark(Thing):
     pass
 
-# +------+------+------+------+
-# |   a  |   b  |   c  |   d  |
-# +------+------+------+------+
-# |   e  |      |   f  |   g  |
-# +------+------+------+------+
-# |   h  |   i  |   j  |   k  |
-# +------+------+------+------+
-
 terrain = ('GGGGGG\n' +
            'GGGGGG\n' +
            'GGGGGG\n' +
@@ -63,7 +68,7 @@ things = ('XXXXXX\n' +
           'XXXXXX')
 
 exogenous_things = ('      \n' +
-                    '    S \n' +
+                    '    s \n' +
                     '    W \n' +
                     '      \n' +
                     '      ')
@@ -76,7 +81,7 @@ OPTIONS = DotDict({
     'terrain': terrain.split('\n'),
     'things': things.split('\n'),
     'exogenous_things': exogenous_things.split('\n'),
-    'exogenous_things_prob': 0.01,
+    'exogenous_things_prob': 0.1,
     'objectives': {'energy': 1.0, 'water': 1.0},
     'rewards':{
         None: {
@@ -113,7 +118,7 @@ class Grid(XYEnvironment):
     def __init__(self, options):
         self.options = options
         self.options.ENV_ENCODING = [('l', Landmark), ('X', Obstacle),
-                                     ('S', Energy), ('W', Water)]
+                                     ('s', Energy), ('W', Water)]
         self.options.save_history_for = [Energy, Water]
         super().__init__(self.options)
 
@@ -153,7 +158,7 @@ class GridAgent(Agent):
     def __init__(self, objectives, landmarks):
         # pylint: disable=line-too-long, too-many-locals
 
-        super().__init__(None, 'GridAgent')
+        super().__init__(None, 'grid_agent')
 
         N = Network(None, objectives)
         SENSOR = N.add_SENSOR_node
