@@ -1,9 +1,21 @@
 # pylint: disable=missing-docstring, global-statement, invalid-name, too-few-public-methods, no-self-use
 #
-# A random Mother cachelot and calf
+# A random mother cachelot and calf
 #
 # Copyright (C) 2017  Jonas Colmsjö, Claes Strannegård
 #
+# A simple example that shows how the `animat.agent` package is used.
+# Two cachelots, a mom and a calf, lives in the `Sea` environment chasing `Squid`.
+# `Sea` is a `XYEnvironment` subclass that support the follwing actions:
+# * sing_eat_and_forward
+# * eat_and_forward
+# * dive_and_forward
+# * up_and_forward
+# * forward
+#
+# The mother sings when she eats and the calf will dive when i hears song.
+# The mother and calf will chose actions randomly when not eating. The behaviour
+# of mom and calf is implemedted with the functions `mom_program` and `calf_program`.
 
 import random
 

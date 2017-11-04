@@ -4,6 +4,12 @@
 #
 # Copyright (C) 2017  Jonas Colmsjö, Claes Strannegård
 #
+# This is an extention of the `random_mom_and_calf` example where the mom and
+# calf are implemented using classes that are inheriting the `Agent`
+# class. The behaviour is now implemented using the `Network` and `MotorNetwork`
+# classes. The `Mom` and `Calf` classes shows two slightly different ways
+# the classes can be used.
+#
 
 import random
 from functools import partial

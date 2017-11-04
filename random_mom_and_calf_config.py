@@ -4,6 +4,8 @@
 #
 # Copyright (C) 2017  Jonas Colmsjö, Claes Strannegård
 #
+# Configuration that is common for the different cachelot examples.
+#
 
 from gzutils.gzutils import DotDict, get_output_dir
 
