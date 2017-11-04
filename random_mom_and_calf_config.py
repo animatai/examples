@@ -84,6 +84,11 @@ OPTIONS = DotDict({
                 'energy': -0.001
             }
         },
+        None: {
+            None: {
+                'energy': -0.001
+            }
+        },
     },
     'wss_cfg': {
         'numTilesPerSquare': (1, 1),

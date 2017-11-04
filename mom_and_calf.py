@@ -33,31 +33,6 @@ l = Logging('mom_and_calf', DEBUG_MODE)
 # Mom and Calf
 # ===========
 
-# Motors and actions
-mom_motors = ['sing_eat_and_forward', 'forward', 'dive_and_forward',
-              'up_and_forward']
-calf_motors = ['eat_and_forward', 'forward', 'dive_and_forward',
-               'up_and_forward']
-
-sing_eat_and_forward, forward, dive_and_forward = frozenset([0]), frozenset([1]), frozenset([2])
-up_and_forward, eat_and_forward = frozenset([3]), frozenset([4])
-
-mom_motors_to_action = {sing_eat_and_forward: 'sing_eat_and_forward',
-                        forward: 'forward',
-                        dive_and_forward: 'dive_and_forward',
-                        up_and_forward: 'up_and_forward',
-                        '*': '-'}
-
-calf_motors_to_action = {eat_and_forward: 'eat_and_forward',
-                         forward: 'forward',
-                         dive_and_forward: 'dive_and_forward',
-                         up_and_forward: 'up_and_forward',
-                         '*': '-'}
-
-mom_motor_model = MotorModel(mom_motors_to_action)
-calf_motor_model = MotorModel(calf_motors_to_action)
-
-
 class Mom(Agent):
 
     def __init__(self, objectives):
@@ -66,24 +41,44 @@ class Mom(Agent):
         # program=None
         super().__init__(None, 'mom')
 
+        # Motors and actions
+        motors = ['sing_eat_and_forward', 'forward', 'dive_and_forward',
+                  'up_and_forward']
+
+        sing_eat_and_forward, forward = frozenset([0]), frozenset([1])
+        dive_and_forward, up_and_forward = frozenset([2]), frozenset([3])
+
+        motors_to_action = {sing_eat_and_forward: 'sing_eat_and_forward',
+                            forward: 'forward',
+                            dive_and_forward: 'dive_and_forward',
+                            up_and_forward: 'up_and_forward',
+                            '*': '-'}
+
+        motor_model = MotorModel(motors_to_action)
+
+
         N = Network(None, objectives)
         self.status = N.get_NEEDs()
         self.status_history = {'energy':[]}
-        N.add_SENSOR_node(Squid)
+        s1 = N.add_SENSOR_node(Squid)
+        network_model = NetworkModel({s1: 'Squid'})
 
-        M = MotorNetwork(mom_motors, mom_motors_to_action)
+        M = MotorNetwork(motors, motors_to_action)
 
         # NOTE: init=agent_start_pos, using a location here (only for debugging),
         #            is a state when MDP:s are used
-        #       network_model=None
-        self.ndp = NetworkDP(mom_start_pos, self.status, mom_motor_model, .9, None)
+        self.ndp = NetworkDP(mom_start_pos, self.status, motor_model, .9, network_model)
         self.q_agent = NetworkQLearningAgent(self.ndp, Ne=0, Rplus=2,
                                              alpha=lambda n: 60./(59+n),
                                              epsilon=0.2,
                                              delta=0.5)
 
+        l.info('Mom q_agent:', self.q_agent)
+        l.info('mom_motors_to_action:', motors_to_action)
+
         # compose applies the functions from right to left
         self.program = compose(do(partial(l.debug, 'Mom mnetwork.update'))
+                               , do(partial(l.debug, M))
                                , M.update
                                , do(partial(l.debug, 'Mom q_agent'))
                                , self.q_agent
@@ -108,25 +103,44 @@ class Calf(Agent):
 
         super().__init__(None, 'calf')
 
+        motors = ['eat_and_forward', 'forward', 'dive_and_forward',
+                  'up_and_forward']
+
+        eat_and_forward, forward = frozenset([0]), frozenset([1])
+        dive_and_forward, up_and_forward  = frozenset([2]), frozenset([3])
+
+        motors_to_action = {eat_and_forward: 'eat_and_forward',
+                            forward: 'forward',
+                            dive_and_forward: 'dive_and_forward',
+                            up_and_forward: 'up_and_forward',
+                            '*': '-'}
+
+        motor_model = MotorModel(motors_to_action)
+
+
         N = Network(None, objectives)
         self.status = N.get_NEEDs()
         self.status_history = {'energy':[]}
-        N.add_SENSOR_node(Squid)
-        N.add_SENSOR_node(Song)
+        s1 = N.add_SENSOR_node(Squid)
+        s2 = N.add_SENSOR_node(Song)
+        network_model = NetworkModel({s1: 'Squid', s2: 'Song'})
 
-        M = MotorNetwork(calf_motors, calf_motors_to_action)
+        M = MotorNetwork(motors, motors_to_action)
 
         # NOTE: init=agent_start_pos, using a location here (only for debugging),
         #            is a state when MDP:s are used
-        #       network_model=None
-        self.ndp = NetworkDP(calf_start_pos, self.status, calf_motor_model, .9, None)
+        self.ndp = NetworkDP(calf_start_pos, self.status, motor_model, .9, network_model)
         self.q_agent = NetworkQLearningAgent(self.ndp, Ne=0, Rplus=2,
                                              alpha=lambda n: 60./(59+n),
                                              epsilon=0.2,
                                              delta=0.5)
 
+        l.info('Calf q_agent:', self.q_agent)
+        l.info('motors_to_action:', motors_to_action)
+
         # compose applies the functions from right to left
         self.program = compose(do(partial(l.debug, 'Calf mnetwork.update'))
+                               , do(partial(l.debug, M))
                                , M.update
                                , do(partial(l.debug, 'Calf q_agent'))
                                , self.q_agent
