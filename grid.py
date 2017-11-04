@@ -1,4 +1,4 @@
-# pylint: disable=missing-docstring, global-statement, invalid-name
+# pylint: disable=missing-docstring, global-statement, invalid-name, too-few-public-methods
 #
 # Copyright (C) 2017  Jonas Colmsjö, Claes Strannegård
 #
@@ -8,14 +8,12 @@
 # ======
 
 import random
-import unittest
 
 from functools import partial
 from toolz.curried import do
 from toolz.functoolz import compose
-from gzutils.gzutils import DotDict, Logging, get_output_dir, save_csv_file
+from gzutils.gzutils import DotDict, Logging, get_output_dir
 
-from animatai.mdp import MDP
 from animatai.utils import vector_add
 from animatai.agents import Agent, Obstacle, Thing, XYEnvironment
 from animatai.network import MotorNetwork, Network
@@ -162,8 +160,9 @@ class GridAgent(Agent):
         self.status = N.get_NEEDs()
         self.status_history = {'energy':[], 'water': []}
 
-        water, energy = SENSOR(Water), SENSOR(Energy)
-
+        # Create sensors
+        SENSOR(Water)
+        SENSOR(Energy)
         # create one SENSOR for each square
         sensor_dict = {}
         for lm in landmarks:
@@ -172,14 +171,13 @@ class GridAgent(Agent):
 
         M = MotorNetwork(motors, motors_to_action)
 
-        # TODO: init=agent_start_pos, using a location here (only for debugging),
+        # NOTE: init=agent_start_pos, using a location here (only for debugging),
         #            is a state when MDP:s are used
-        #       sensor_model=None (used with MDPs but not in proper environments)
         self.ndp = NetworkDP(agent_start_pos, self.status, motor_model, .9, network_model)
         self.q_agent = NetworkQLearningAgent(self.ndp, Ne=0, Rplus=2,
-                                        alpha=lambda n: 60./(59+n),
-                                        epsilon=0.2,
-                                        delta=0.5)
+                                             alpha=lambda n: 60./(59+n),
+                                             epsilon=0.2,
+                                             delta=0.5)
 
 
         # compose applies the functions from right to left
@@ -216,21 +214,21 @@ class GridAgent(Agent):
 
 def print_grid(U):
     res = ''
-    for k in ['7','8','9','10']:
+    for k in ['7', '8', '9', '10']:
         res += (str(U[k]) if k in U else '-') + '\t'
     l.info(res)
     res = ''
-    for k in ['13','X','15','16']:
+    for k in ['13', 'X', '15', '16']:
         res += (str(U[k]) if k in U else '-') + '\t'
     l.info(res)
     res = ''
-    for k in ['19','20','21','22']:
+    for k in ['19', '20', '21', '22']:
         res += (str(U[k]) if k in U else '-') + '\t'
     l.info(res)
 
     res = ''
     for k in U:
-        if k not in ['7','8','9','10', '13','X','15','16', '19','20','21','22']:
+        if k not in ['7', '8', '9', '10', '13', 'X', '15', '16', '19', '20', '21', '22']:
             res += str(k) + ':' + str(U[k]) + '\t'
     l.info(res)
 
