@@ -85,14 +85,17 @@ class Mom(Agent):
                           frozenset([n3]): dive_and_forward,
                           frozenset([n4]): up_and_forward}
 
+        l.info('state_to_motor:', state_to_motor)
+        l.info('motors_to_action:', motors_to_action)
+
         # compose applies the functions from right to left
         self.program = compose(do(partial(l.debug, 'Mom mnetwork.update'))
                                , M.update
                                , do(partial(l.debug, 'Mom state_to_motor'))
-                               , state_to_motor.get
+                               , lambda p: state_to_motor.get(p[0])
                                , do(partial(l.debug, N))
                                , do(partial(l.debug, 'Mom filter interesting states'))
-                               , lambda s: s & {s1, n2, n3, n4}
+                               , lambda p: (p[0] & {s1, n2, n3, n4}, p[1])
                                , do(partial(l.debug, 'Mom network.update'))
                                , N.update
                                , do(partial(l.debug, 'Mom percept'))
@@ -138,10 +141,10 @@ class Calf(Agent):
         self.program = compose(do(partial(l.debug, 'Calf mnetwork.update'))
                                , M.update
                                , do(partial(l.debug, 'Calf state_to_motor'))
-                               , lambda s: eat_and_forward if s1 in s else (dive_and_forward if s2 in s else up_and_forward)
+                               , lambda p: eat_and_forward if s1 in p[0] else (dive_and_forward if s2 in p[0] else up_and_forward)
                                #, lambda s: eat_and_forward if s1 in s else (dive_and_forward if s2 in s else state_to_motor.get(s))
-                               , lambda x: do(partial(l.info, '--- CALF HEARD SONG, DIVING! ---'))(x) if s2 in x else x
-                               , lambda x: do(partial(l.info, '--- CALF FOUND SQUID, EATING! ---'))(x) if s1 in x else x
+                               , lambda p: do(partial(l.info, '--- CALF HEARD SONG, DIVING! ---'))(p) if s2 in p[0] else p
+                               , lambda p: do(partial(l.info, '--- CALF FOUND SQUID, EATING! ---'))(p) if s1 in p[0] else p
                                , do(partial(l.debug, 'Calf network.update'))
                                , N.update
                                , do(partial(l.debug, 'Calf percept'))

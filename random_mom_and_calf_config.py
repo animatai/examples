@@ -20,19 +20,19 @@ terrain = ('WWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWW\n' +
 # the mother and calf have separate and identical lanes
 things = ('XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX\n' +
           '                                                  \n' +
-          '  ss                                      sss     \n' +
+          '  ssss                                    ssss    \n' +
           'XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX\n' +
           '                                                  \n' +
-          '  sss                                     sss     \n' +
+          '  ssss                                    ssss    \n' +
           'XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX')
 
 # the mother and calf have separate and identical lanes
 exogenous_things = ('                                                  \n' +
                     '                                                  \n' +
-                    '                                  sss             \n' +
+                    '  ssss                                    ssss    \n' +
                     '                                                  \n' +
                     '                                                  \n' +
-                    '                                  sss             \n' +
+                    '  ssss                                    ssss    \n' +
                     '                                                  ')
 
 
