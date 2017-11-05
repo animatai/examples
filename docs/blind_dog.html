@@ -1,0 +1,517 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <meta http-equiv="content-type" content="text/html;charset=utf-8">
+  <title>blind_dog.py</title>
+  <link rel="stylesheet" href="pycco.css">
+</head>
+<body>
+<div id='container'>
+  <div id="background"></div>
+  <div class='section'>
+    <div class='docs'><h1>blind_dog.py</h1></div>
+  </div>
+  <div class='clearall'>
+  <div class='section' id='section-0'>
+    <div class='docs'>
+      <div class='octowrap'>
+        <a class='octothorpe' href='#section-0'>#</a>
+      </div>
+      <p>pylint: disable=missing-docstring, global-statement, invalid-name, too-few-public-methods, no-self-use</p>
+<p>A simple example showing how wsserver can be used</p>
+<p>Copyright (C) 2017  Jonas Colmsjö, Claes Strannegård</p>
+    </div>
+    <div class='code'>
+      <div class="highlight"><pre><span></span><span class="kn">import</span> <span class="nn">random</span>
+
+<span class="kn">from</span> <span class="nn">gzutils.gzutils</span> <span class="kn">import</span> <span class="n">DotDict</span><span class="p">,</span> <span class="n">Logging</span>
+<span class="kn">from</span> <span class="nn">animatai.agents</span> <span class="kn">import</span> <span class="n">Agent</span><span class="p">,</span> <span class="n">Thing</span><span class="p">,</span> <span class="n">Direction</span><span class="p">,</span> <span class="n">NonSpatial</span><span class="p">,</span> <span class="n">XYEnvironment</span>
+<span class="kn">from</span> <span class="nn">animatai.utils</span> <span class="kn">import</span> <span class="n">vector_add</span></pre></div>
+    </div>
+  </div>
+  <div class='clearall'></div>
+  <div class='section' id='section-1'>
+    <div class='docs'>
+      <div class='octowrap'>
+        <a class='octothorpe' href='#section-1'>#</a>
+      </div>
+      <h1>Setup logging</h1>
+    </div>
+    <div class='code'>
+      <div class="highlight"><pre><span class="n">DEBUG_MODE</span> <span class="o">=</span> <span class="bp">True</span>
+<span class="n">l</span> <span class="o">=</span> <span class="n">Logging</span><span class="p">(</span><span class="s1">&#39;blind_dog&#39;</span><span class="p">,</span> <span class="n">DEBUG_MODE</span><span class="p">)</span>
+
+<span class="n">random</span><span class="o">.</span><span class="n">seed</span><span class="p">(</span><span class="s1">&#39;blind-dog&#39;</span><span class="p">)</span></pre></div>
+    </div>
+  </div>
+  <div class='clearall'></div>
+  <div class='section' id='section-2'>
+    <div class='docs'>
+      <div class='octowrap'>
+        <a class='octothorpe' href='#section-2'>#</a>
+      </div>
+      <h1>Configuration of rendering</h1>
+<p>left: (-1,0), right: (1,0), up: (0,-1), down: (0,1)</p>
+    </div>
+    <div class='code'>
+      <div class="highlight"><pre><span class="n">MOVES</span> <span class="o">=</span> <span class="p">[(</span><span class="mi">0</span><span class="p">,</span> <span class="o">-</span><span class="mi">1</span><span class="p">),</span> <span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="mi">1</span><span class="p">)]</span>
+
+<span class="n">fido_start_pos</span> <span class="o">=</span> <span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="mi">0</span><span class="p">)</span>
+<span class="n">dido_start_pos</span> <span class="o">=</span> <span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="mi">0</span><span class="p">)</span>
+
+<span class="n">OPTIONS</span> <span class="o">=</span> <span class="n">DotDict</span><span class="p">({</span>
+    <span class="s1">&#39;terrain&#39;</span><span class="p">:</span> <span class="s1">&#39;G</span><span class="se">\n</span><span class="s1">G</span><span class="se">\n</span><span class="s1">G</span><span class="se">\n</span><span class="s1">G</span><span class="se">\n</span><span class="s1">G</span><span class="se">\n</span><span class="s1">G</span><span class="se">\n</span><span class="s1">G</span><span class="se">\n</span><span class="s1">G</span><span class="se">\n</span><span class="s1">G</span><span class="se">\n</span><span class="s1">G&#39;</span><span class="o">.</span><span class="n">split</span><span class="p">(</span><span class="s1">&#39;</span><span class="se">\n</span><span class="s1">&#39;</span><span class="p">),</span>
+    <span class="s1">&#39;wss_cfg&#39;</span><span class="p">:</span> <span class="p">{</span>
+        <span class="s1">&#39;numTilesPerSquare&#39;</span><span class="p">:</span> <span class="p">(</span><span class="mi">1</span><span class="p">,</span> <span class="mi">1</span><span class="p">),</span>
+        <span class="s1">&#39;drawGrid&#39;</span><span class="p">:</span> <span class="bp">True</span><span class="p">,</span>
+        <span class="s1">&#39;randomTerrain&#39;</span><span class="p">:</span> <span class="mi">0</span><span class="p">,</span>
+        <span class="s1">&#39;agents&#39;</span><span class="p">:</span> <span class="p">{</span>
+            <span class="s1">&#39;fido&#39;</span><span class="p">:</span> <span class="p">{</span>
+                <span class="s1">&#39;name&#39;</span><span class="p">:</span> <span class="s1">&#39;F&#39;</span><span class="p">,</span>
+                <span class="s1">&#39;pos&#39;</span><span class="p">:</span> <span class="n">fido_start_pos</span><span class="p">,</span>
+                <span class="s1">&#39;hidden&#39;</span><span class="p">:</span> <span class="bp">False</span>
+            <span class="p">},</span>
+            <span class="s1">&#39;dido&#39;</span><span class="p">:</span> <span class="p">{</span>
+                <span class="s1">&#39;name&#39;</span><span class="p">:</span> <span class="s1">&#39;D&#39;</span><span class="p">,</span>
+                <span class="s1">&#39;pos&#39;</span><span class="p">:</span> <span class="n">dido_start_pos</span><span class="p">,</span>
+                <span class="s1">&#39;hidden&#39;</span><span class="p">:</span> <span class="bp">False</span>
+            <span class="p">}</span>
+        <span class="p">}</span>
+    <span class="p">}</span>
+<span class="p">})</span></pre></div>
+    </div>
+  </div>
+  <div class='clearall'></div>
+  <div class='section' id='section-3'>
+    <div class='docs'>
+      <div class='octowrap'>
+        <a class='octothorpe' href='#section-3'>#</a>
+      </div>
+      <h1>Classes</h1>
+    </div>
+    <div class='code'>
+      <div class="highlight"><pre></pre></div>
+    </div>
+  </div>
+  <div class='clearall'></div>
+  <div class='section' id='section-4'>
+    <div class='docs'>
+      <div class='octowrap'>
+        <a class='octothorpe' href='#section-4'>#</a>
+      </div>
+      
+    </div>
+    <div class='code'>
+      <div class="highlight"><pre><span class="k">class</span> <span class="nc">Food</span><span class="p">(</span><span class="n">Thing</span><span class="p">):</span>
+    <span class="k">pass</span></pre></div>
+    </div>
+  </div>
+  <div class='clearall'></div>
+  <div class='section' id='section-5'>
+    <div class='docs'>
+      <div class='octowrap'>
+        <a class='octothorpe' href='#section-5'>#</a>
+      </div>
+      
+    </div>
+    <div class='code'>
+      <div class="highlight"><pre><span class="k">class</span> <span class="nc">Water</span><span class="p">(</span><span class="n">Thing</span><span class="p">):</span>
+    <span class="k">pass</span></pre></div>
+    </div>
+  </div>
+  <div class='clearall'></div>
+  <div class='section' id='section-6'>
+    <div class='docs'>
+      <div class='octowrap'>
+        <a class='octothorpe' href='#section-6'>#</a>
+      </div>
+      
+    </div>
+    <div class='code'>
+      <div class="highlight"><pre><span class="k">class</span> <span class="nc">Dirt</span><span class="p">(</span><span class="n">Thing</span><span class="p">):</span>
+    <span class="k">pass</span></pre></div>
+    </div>
+  </div>
+  <div class='clearall'></div>
+  <div class='section' id='section-7'>
+    <div class='docs'>
+      <div class='octowrap'>
+        <a class='octothorpe' href='#section-7'>#</a>
+      </div>
+      
+    </div>
+    <div class='code'>
+      <div class="highlight"><pre><span class="k">class</span> <span class="nc">Bark</span><span class="p">(</span><span class="n">NonSpatial</span><span class="p">):</span></pre></div>
+    </div>
+  </div>
+  <div class='clearall'></div>
+  <div class='section' id='section-8'>
+    <div class='docs'>
+      <div class='octowrap'>
+        <a class='octothorpe' href='#section-8'>#</a>
+      </div>
+      
+    </div>
+    <div class='code'>
+      <div class="highlight"><pre>    <span class="k">def</span> <span class="fm">__hash__</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="k">return</span> <span class="nb">hash</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="vm">__name__</span><span class="p">)</span></pre></div>
+    </div>
+  </div>
+  <div class='clearall'></div>
+  <div class='section' id='section-9'>
+    <div class='docs'>
+      <div class='octowrap'>
+        <a class='octothorpe' href='#section-9'>#</a>
+      </div>
+      
+    </div>
+    <div class='code'>
+      <div class="highlight"><pre><span class="k">class</span> <span class="nc">Park</span><span class="p">(</span><span class="n">XYEnvironment</span><span class="p">):</span></pre></div>
+    </div>
+  </div>
+  <div class='clearall'></div>
+  <div class='section' id='section-10'>
+    <div class='docs'>
+      <div class='octowrap'>
+        <a class='octothorpe' href='#section-10'>#</a>
+      </div>
+      
+    </div>
+    <div class='code'>
+      <div class="highlight"><pre>    <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">options</span><span class="p">):</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">ENV_ENCODING</span> <span class="o">=</span> <span class="p">[(</span><span class="s1">&#39;F&#39;</span><span class="p">,</span> <span class="n">Food</span><span class="p">),</span> <span class="p">(</span><span class="s1">&#39;W&#39;</span><span class="p">,</span> <span class="n">Water</span><span class="p">),</span> <span class="p">(</span><span class="s1">&#39;D&#39;</span><span class="p">,</span> <span class="n">Dirt</span><span class="p">)]</span></pre></div>
+    </div>
+  </div>
+  <div class='clearall'></div>
+  <div class='section' id='section-11'>
+    <div class='docs'>
+      <div class='octowrap'>
+        <a class='octothorpe' href='#section-11'>#</a>
+      </div>
+      <p>options['width'] = len(options.terrain[0])
+options['height'] = len(options.terrain)</p>
+    </div>
+    <div class='code'>
+      <div class="highlight"><pre>        <span class="nb">super</span><span class="p">()</span><span class="o">.</span><span class="fm">__init__</span><span class="p">(</span><span class="n">options</span><span class="p">)</span></pre></div>
+    </div>
+  </div>
+  <div class='clearall'></div>
+  <div class='section' id='section-12'>
+    <div class='docs'>
+      <div class='octowrap'>
+        <a class='octothorpe' href='#section-12'>#</a>
+      </div>
+      
+    </div>
+    <div class='code'>
+      <div class="highlight"><pre>    <span class="k">def</span> <span class="nf">calc_performance</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">_</span><span class="p">,</span> <span class="n">_2</span><span class="p">):</span>
+        <span class="k">pass</span></pre></div>
+    </div>
+  </div>
+  <div class='clearall'></div>
+  <div class='section' id='section-13'>
+    <div class='docs'>
+      <div class='octowrap'>
+        <a class='octothorpe' href='#section-13'>#</a>
+      </div>
+      <p>changes the state of the environment based on what the agent does</p>
+    </div>
+    <div class='code'>
+      <div class="highlight"><pre>    <span class="k">def</span> <span class="nf">execute_action</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">agent</span><span class="p">,</span> <span class="n">action</span><span class="p">,</span> <span class="n">time</span><span class="p">):</span>
+        <span class="nb">super</span><span class="p">()</span><span class="o">.</span><span class="n">execute_action</span><span class="p">(</span><span class="n">agent</span><span class="p">,</span> <span class="n">action</span><span class="p">,</span> <span class="n">time</span><span class="p">)</span>
+
+        <span class="k">if</span> <span class="n">action</span> <span class="o">==</span> <span class="s1">&#39;Forward&#39;</span><span class="p">:</span></pre></div>
+    </div>
+  </div>
+  <div class='clearall'></div>
+  <div class='section' id='section-14'>
+    <div class='docs'>
+      <div class='octowrap'>
+        <a class='octothorpe' href='#section-14'>#</a>
+      </div>
+      <p>the super class moves the agent for us, just print a status</p>
+    </div>
+    <div class='code'>
+      <div class="highlight"><pre>            <span class="n">msg</span> <span class="o">=</span> <span class="s1">&#39;{} decided to {} at location {} and time {}&#39;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="nb">str</span><span class="p">(</span><span class="n">agent</span><span class="p">)[</span><span class="mi">1</span><span class="p">:</span><span class="o">-</span><span class="mi">1</span><span class="p">],</span>
+                                                                       <span class="n">action</span><span class="p">,</span>
+                                                                       <span class="n">agent</span><span class="o">.</span><span class="n">location</span><span class="p">,</span>
+                                                                       <span class="n">time</span><span class="p">)</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">show_message</span><span class="p">(</span><span class="n">msg</span><span class="p">)</span>
+
+        <span class="k">elif</span> <span class="n">action</span> <span class="o">==</span> <span class="s1">&#39;eat&#39;</span><span class="p">:</span>
+            <span class="n">items</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">list_things_at</span><span class="p">(</span><span class="n">agent</span><span class="o">.</span><span class="n">location</span><span class="p">,</span> <span class="n">tclass</span><span class="o">=</span><span class="n">Food</span><span class="p">)</span>
+            <span class="k">if</span> <span class="n">items</span><span class="p">:</span>
+                <span class="k">if</span> <span class="n">agent</span><span class="o">.</span><span class="n">eat</span><span class="p">(</span><span class="n">items</span><span class="p">[</span><span class="mi">0</span><span class="p">]):</span> <span class="c1">#Have the dog eat the first item</span>
+                    <span class="n">msg</span> <span class="o">=</span> <span class="s1">&#39;{} ate {} at location {} and time {}&#39;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="nb">str</span><span class="p">(</span><span class="n">agent</span><span class="p">)[</span><span class="mi">1</span><span class="p">:</span><span class="o">-</span><span class="mi">1</span><span class="p">],</span>
+                                                                        <span class="nb">str</span><span class="p">(</span><span class="n">items</span><span class="p">[</span><span class="mi">0</span><span class="p">])[</span><span class="mi">1</span><span class="p">:</span><span class="o">-</span><span class="mi">1</span><span class="p">],</span>
+                                                                        <span class="n">agent</span><span class="o">.</span><span class="n">location</span><span class="p">,</span>
+                                                                        <span class="n">time</span><span class="p">)</span>
+                    <span class="bp">self</span><span class="o">.</span><span class="n">show_message</span><span class="p">(</span><span class="n">msg</span><span class="p">)</span>
+                    <span class="bp">self</span><span class="o">.</span><span class="n">delete_thing</span><span class="p">(</span><span class="n">items</span><span class="p">[</span><span class="mi">0</span><span class="p">])</span> <span class="c1">#Delete it from the Park after.</span>
+
+        <span class="k">elif</span> <span class="n">action</span> <span class="o">==</span> <span class="s1">&#39;drink&#39;</span><span class="p">:</span>
+            <span class="n">items</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">list_things_at</span><span class="p">(</span><span class="n">agent</span><span class="o">.</span><span class="n">location</span><span class="p">,</span> <span class="n">tclass</span><span class="o">=</span><span class="n">Water</span><span class="p">)</span>
+            <span class="k">if</span> <span class="n">items</span><span class="p">:</span>
+                <span class="k">if</span> <span class="n">agent</span><span class="o">.</span><span class="n">drink</span><span class="p">(</span><span class="n">items</span><span class="p">[</span><span class="mi">0</span><span class="p">]):</span> <span class="c1">#Have the dog drink the first item</span>
+                    <span class="n">msg</span> <span class="o">=</span> <span class="s1">&#39;{} drank {} at location {} and time {}&#39;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="nb">str</span><span class="p">(</span><span class="n">agent</span><span class="p">)[</span><span class="mi">1</span><span class="p">:</span><span class="o">-</span><span class="mi">1</span><span class="p">],</span>
+                                                                          <span class="nb">str</span><span class="p">(</span><span class="n">items</span><span class="p">[</span><span class="mi">0</span><span class="p">])[</span><span class="mi">1</span><span class="p">:</span><span class="o">-</span><span class="mi">1</span><span class="p">],</span>
+                                                                          <span class="n">agent</span><span class="o">.</span><span class="n">location</span><span class="p">,</span>
+                                                                          <span class="n">time</span><span class="p">)</span>
+                    <span class="bp">self</span><span class="o">.</span><span class="n">show_message</span><span class="p">(</span><span class="n">msg</span><span class="p">)</span>
+                    <span class="bp">self</span><span class="o">.</span><span class="n">delete_thing</span><span class="p">(</span><span class="n">items</span><span class="p">[</span><span class="mi">0</span><span class="p">])</span> <span class="c1">#Delete it from the Park after.</span>
+
+        <span class="k">elif</span> <span class="n">action</span> <span class="o">==</span> <span class="s1">&#39;watch&#39;</span><span class="p">:</span>
+            <span class="n">items</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">list_things_at</span><span class="p">(</span><span class="n">agent</span><span class="o">.</span><span class="n">location</span><span class="p">,</span> <span class="n">tclass</span><span class="o">=</span><span class="n">Thing</span><span class="p">)</span>
+            <span class="n">msg</span> <span class="o">=</span> <span class="s1">&#39;{} decided to {} {} at location {} and time {}&#39;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="nb">str</span><span class="p">(</span><span class="n">agent</span><span class="p">)[</span><span class="mi">1</span><span class="p">:</span><span class="o">-</span><span class="mi">1</span><span class="p">],</span>
+                                                                          <span class="n">action</span><span class="p">,</span>
+                                                                          <span class="n">items</span><span class="p">,</span>
+                                                                          <span class="n">agent</span><span class="o">.</span><span class="n">location</span><span class="p">,</span>
+                                                                          <span class="n">time</span><span class="p">)</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">show_message</span><span class="p">(</span><span class="n">msg</span><span class="p">)</span>
+
+        <span class="k">elif</span> <span class="n">action</span> <span class="o">==</span> <span class="s1">&#39;bark&#39;</span><span class="p">:</span>
+            <span class="n">msg</span> <span class="o">=</span> <span class="s1">&#39;{} decided to {} at location {} and time {}&#39;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="nb">str</span><span class="p">(</span><span class="n">agent</span><span class="p">)[</span><span class="mi">1</span><span class="p">:</span><span class="o">-</span><span class="mi">1</span><span class="p">],</span>
+                                                                       <span class="n">action</span><span class="p">,</span>
+                                                                       <span class="n">agent</span><span class="o">.</span><span class="n">location</span><span class="p">,</span>
+                                                                       <span class="n">time</span><span class="p">)</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">show_message</span><span class="p">(</span><span class="n">msg</span><span class="p">)</span>
+            <span class="n">agent</span><span class="o">.</span><span class="n">bark</span><span class="p">(</span><span class="n">time</span><span class="p">)</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">add_non_spatial</span><span class="p">(</span><span class="n">Bark</span><span class="p">(</span><span class="s1">&#39;vov&#39;</span><span class="p">),</span> <span class="n">time</span><span class="p">)</span></pre></div>
+    </div>
+  </div>
+  <div class='clearall'></div>
+  <div class='section' id='section-15'>
+    <div class='docs'>
+      <div class='octowrap'>
+        <a class='octothorpe' href='#section-15'>#</a>
+      </div>
+      <p>By default, we're done when we can't find a live agent,
+but to prevent killing our cute dog, we will stop before itself -
+when there is no more food or water</p>
+    </div>
+    <div class='code'>
+      <div class="highlight"><pre>    <span class="k">def</span> <span class="nf">is_done</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="n">no_edibles</span> <span class="o">=</span> <span class="ow">not</span> <span class="nb">any</span><span class="p">(</span><span class="nb">isinstance</span><span class="p">(</span><span class="n">thing</span><span class="p">,</span> <span class="p">(</span><span class="n">Food</span><span class="p">,</span> <span class="n">Water</span><span class="p">))</span> <span class="k">for</span> <span class="n">thing</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">things</span><span class="p">)</span>
+        <span class="n">dead_agents</span> <span class="o">=</span> <span class="ow">not</span> <span class="nb">any</span><span class="p">(</span><span class="n">agent</span><span class="o">.</span><span class="n">is_alive</span><span class="p">()</span> <span class="k">for</span> <span class="n">agent</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">agents</span><span class="p">)</span>
+        <span class="k">return</span> <span class="n">dead_agents</span> <span class="ow">or</span> <span class="n">no_edibles</span></pre></div>
+    </div>
+  </div>
+  <div class='clearall'></div>
+  <div class='section' id='section-16'>
+    <div class='docs'>
+      <div class='octowrap'>
+        <a class='octothorpe' href='#section-16'>#</a>
+      </div>
+      
+    </div>
+    <div class='code'>
+      <div class="highlight"><pre><span class="k">class</span> <span class="nc">BlindDog</span><span class="p">(</span><span class="n">Agent</span><span class="p">):</span></pre></div>
+    </div>
+  </div>
+  <div class='clearall'></div>
+  <div class='section' id='section-17'>
+    <div class='docs'>
+      <div class='octowrap'>
+        <a class='octothorpe' href='#section-17'>#</a>
+      </div>
+      
+    </div>
+    <div class='code'>
+      <div class="highlight"><pre>    <span class="k">def</span> <span class="fm">__repr__</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="k">return</span> <span class="s1">&#39;&lt;{} ({})&gt;&#39;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="vm">__name__</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="vm">__class__</span><span class="o">.</span><span class="vm">__name__</span><span class="p">)</span></pre></div>
+    </div>
+  </div>
+  <div class='clearall'></div>
+  <div class='section' id='section-18'>
+    <div class='docs'>
+      <div class='octowrap'>
+        <a class='octothorpe' href='#section-18'>#</a>
+      </div>
+      
+    </div>
+    <div class='code'>
+      <div class="highlight"><pre>    <span class="k">def</span> <span class="nf">movedown</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">location</span> <span class="o">=</span> <span class="n">vector_add</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">location</span><span class="p">,</span> <span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="mi">2</span><span class="p">))</span></pre></div>
+    </div>
+  </div>
+  <div class='clearall'></div>
+  <div class='section' id='section-19'>
+    <div class='docs'>
+      <div class='octowrap'>
+        <a class='octothorpe' href='#section-19'>#</a>
+      </div>
+      
+    </div>
+    <div class='code'>
+      <div class="highlight"><pre>    <span class="k">def</span> <span class="nf">eat</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">thing</span><span class="p">):</span>
+        <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">thing</span><span class="p">,</span> <span class="n">Food</span><span class="p">):</span>
+            <span class="n">l</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="s2">&quot;{} ate food at {}.&quot;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="vm">__name__</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">location</span><span class="p">))</span>
+            <span class="k">return</span> <span class="bp">True</span>
+
+        <span class="k">return</span> <span class="bp">False</span></pre></div>
+    </div>
+  </div>
+  <div class='clearall'></div>
+  <div class='section' id='section-20'>
+    <div class='docs'>
+      <div class='octowrap'>
+        <a class='octothorpe' href='#section-20'>#</a>
+      </div>
+      
+    </div>
+    <div class='code'>
+      <div class="highlight"><pre>    <span class="k">def</span> <span class="nf">drink</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">thing</span><span class="p">):</span>
+        <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">thing</span><span class="p">,</span> <span class="n">Water</span><span class="p">):</span>
+            <span class="n">l</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="s2">&quot;{} drank water at {}.&quot;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="vm">__name__</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">location</span><span class="p">))</span>
+            <span class="k">return</span> <span class="bp">True</span>
+
+        <span class="k">return</span> <span class="bp">False</span></pre></div>
+    </div>
+  </div>
+  <div class='clearall'></div>
+  <div class='section' id='section-21'>
+    <div class='docs'>
+      <div class='octowrap'>
+        <a class='octothorpe' href='#section-21'>#</a>
+      </div>
+      
+    </div>
+    <div class='code'>
+      <div class="highlight"><pre>    <span class="k">def</span> <span class="nf">bark</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">time</span><span class="p">):</span>
+        <span class="n">l</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="s2">&quot;{} barked at time {}.&quot;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="vm">__name__</span><span class="p">,</span> <span class="n">time</span><span class="p">))</span>
+        <span class="k">return</span> <span class="bp">True</span></pre></div>
+    </div>
+  </div>
+  <div class='clearall'></div>
+  <div class='section' id='section-22'>
+    <div class='docs'>
+      <div class='octowrap'>
+        <a class='octothorpe' href='#section-22'>#</a>
+      </div>
+      <p>thing</p>
+    </div>
+    <div class='code'>
+      <div class="highlight"><pre>    <span class="k">def</span> <span class="nf">watch</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">_</span><span class="p">):</span>
+        <span class="k">return</span> <span class="bp">True</span></pre></div>
+    </div>
+  </div>
+  <div class='clearall'></div>
+  <div class='section' id='section-23'>
+    <div class='docs'>
+      <div class='octowrap'>
+        <a class='octothorpe' href='#section-23'>#</a>
+      </div>
+      <p>Returns an action based on it's percepts</p>
+    </div>
+    <div class='code'>
+      <div class="highlight"><pre><span class="k">def</span> <span class="nf">program</span><span class="p">(</span><span class="n">percept</span><span class="p">):</span></pre></div>
+    </div>
+  </div>
+  <div class='clearall'></div>
+  <div class='section' id='section-24'>
+    <div class='docs'>
+      <div class='octowrap'>
+        <a class='octothorpe' href='#section-24'>#</a>
+      </div>
+      <p>pylint: disable=redefined-argument-from-local</p>
+    </div>
+    <div class='code'>
+      <div class="highlight"><pre></pre></div>
+    </div>
+  </div>
+  <div class='clearall'></div>
+  <div class='section' id='section-25'>
+    <div class='docs'>
+      <div class='octowrap'>
+        <a class='octothorpe' href='#section-25'>#</a>
+      </div>
+      <p>unpack the percepts tuple: ([Thing|NonSpatial], rewards)</p>
+    </div>
+    <div class='code'>
+      <div class="highlight"><pre>    <span class="n">percepts</span><span class="p">,</span> <span class="n">_</span> <span class="o">=</span> <span class="n">percept</span>
+
+    <span class="n">action</span> <span class="o">=</span> <span class="s1">&#39;bark&#39;</span> <span class="k">if</span> <span class="n">random</span><span class="o">.</span><span class="n">random</span><span class="p">()</span> <span class="o">&lt;</span> <span class="mf">0.25</span> <span class="k">else</span> <span class="s1">&#39;Forward&#39;</span>
+
+    <span class="k">for</span> <span class="n">percept</span> <span class="ow">in</span> <span class="n">percepts</span><span class="p">:</span>
+        <span class="n">object_</span><span class="p">,</span> <span class="n">_2</span> <span class="o">=</span> <span class="n">percept</span>
+        <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">object_</span><span class="p">,</span> <span class="n">Food</span><span class="p">):</span>
+            <span class="n">l</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="s1">&#39;-- EATING ---&#39;</span><span class="p">)</span>
+            <span class="n">action</span> <span class="o">=</span> <span class="s1">&#39;eat&#39;</span>
+            <span class="k">break</span>
+        <span class="k">elif</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">object_</span><span class="p">,</span> <span class="n">Water</span><span class="p">):</span>
+            <span class="n">l</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="s1">&#39;-- DRINKING ---&#39;</span><span class="p">)</span>
+            <span class="n">action</span> <span class="o">=</span> <span class="s1">&#39;drink&#39;</span>
+            <span class="k">break</span>
+        <span class="k">elif</span> <span class="n">random</span><span class="o">.</span><span class="n">random</span><span class="p">()</span> <span class="o">&lt;</span> <span class="mf">0.5</span><span class="p">:</span>
+            <span class="n">action</span> <span class="o">=</span> <span class="s1">&#39;watch&#39;</span>
+            <span class="k">break</span>
+        <span class="k">elif</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">object_</span><span class="p">,</span> <span class="n">Bark</span><span class="p">)</span> <span class="ow">and</span> <span class="n">random</span><span class="o">.</span><span class="n">random</span><span class="p">()</span> <span class="o">&lt;</span> <span class="mf">0.5</span><span class="p">:</span>
+            <span class="n">l</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="s1">&#39;-- HEARD BARK ---&#39;</span><span class="p">)</span>
+            <span class="n">action</span> <span class="o">=</span> <span class="s1">&#39;bark&#39;</span>
+            <span class="k">break</span>
+
+    <span class="k">return</span> <span class="n">action</span></pre></div>
+    </div>
+  </div>
+  <div class='clearall'></div>
+  <div class='section' id='section-26'>
+    <div class='docs'>
+      <div class='octowrap'>
+        <a class='octothorpe' href='#section-26'>#</a>
+      </div>
+      <h1>Main</h1>
+    </div>
+    <div class='code'>
+      <div class="highlight"><pre></pre></div>
+    </div>
+  </div>
+  <div class='clearall'></div>
+  <div class='section' id='section-27'>
+    <div class='docs'>
+      <div class='octowrap'>
+        <a class='octothorpe' href='#section-27'>#</a>
+      </div>
+      <p>_=param</p>
+    </div>
+    <div class='code'>
+      <div class="highlight"><pre><span class="k">def</span> <span class="nf">run</span><span class="p">(</span><span class="n">wss</span><span class="o">=</span><span class="bp">None</span><span class="p">,</span> <span class="n">steps</span><span class="o">=</span><span class="bp">None</span><span class="p">,</span> <span class="n">seed</span><span class="o">=</span><span class="bp">None</span><span class="p">):</span>
+    <span class="n">steps</span> <span class="o">=</span> <span class="nb">int</span><span class="p">(</span><span class="n">steps</span><span class="p">)</span> <span class="k">if</span> <span class="n">steps</span> <span class="k">else</span> <span class="mi">10</span>
+
+    <span class="n">random</span><span class="o">.</span><span class="n">seed</span><span class="p">(</span><span class="n">seed</span><span class="p">)</span>
+
+    <span class="n">l</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span><span class="s1">&#39;Running blind_dog &#39;</span><span class="p">,</span> <span class="n">steps</span><span class="p">,</span> <span class="s1">&#39; steps&#39;</span><span class="p">)</span>
+
+    <span class="n">options</span> <span class="o">=</span> <span class="n">OPTIONS</span>
+    <span class="n">options</span><span class="o">.</span><span class="n">wss</span> <span class="o">=</span> <span class="n">wss</span>
+
+    <span class="n">park</span> <span class="o">=</span> <span class="n">Park</span><span class="p">(</span><span class="n">options</span><span class="p">)</span>
+    <span class="n">dog1</span> <span class="o">=</span> <span class="n">BlindDog</span><span class="p">(</span><span class="n">program</span><span class="p">,</span> <span class="s1">&#39;fido&#39;</span><span class="p">)</span>
+    <span class="n">dog2</span> <span class="o">=</span> <span class="n">BlindDog</span><span class="p">(</span><span class="n">program</span><span class="p">,</span> <span class="s1">&#39;dido&#39;</span><span class="p">)</span>
+
+    <span class="n">dog1</span><span class="o">.</span><span class="n">direction</span> <span class="o">=</span> <span class="n">Direction</span><span class="p">(</span><span class="n">Direction</span><span class="o">.</span><span class="n">D</span><span class="p">)</span>
+    <span class="n">dog2</span><span class="o">.</span><span class="n">direction</span> <span class="o">=</span> <span class="n">Direction</span><span class="p">(</span><span class="n">Direction</span><span class="o">.</span><span class="n">D</span><span class="p">)</span>
+
+    <span class="n">dogfood</span> <span class="o">=</span> <span class="n">Food</span><span class="p">(</span><span class="s1">&#39;dogfood&#39;</span><span class="p">)</span>
+    <span class="n">water</span> <span class="o">=</span> <span class="n">Water</span><span class="p">(</span><span class="s1">&#39;water&#39;</span><span class="p">)</span>
+    <span class="n">dirt</span> <span class="o">=</span> <span class="n">Dirt</span><span class="p">(</span><span class="s1">&#39;dirt&#39;</span><span class="p">)</span>
+
+    <span class="n">park</span><span class="o">.</span><span class="n">add_thing</span><span class="p">(</span><span class="n">dog1</span><span class="p">,</span> <span class="n">fido_start_pos</span><span class="p">)</span>
+    <span class="n">park</span><span class="o">.</span><span class="n">add_thing</span><span class="p">(</span><span class="n">dog2</span><span class="p">,</span> <span class="n">dido_start_pos</span><span class="p">)</span>
+
+    <span class="n">l</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span><span class="n">dog1</span><span class="o">.</span><span class="n">location</span><span class="p">,</span> <span class="n">dog2</span><span class="o">.</span><span class="n">location</span><span class="p">)</span>
+
+    <span class="n">park</span><span class="o">.</span><span class="n">add_thing</span><span class="p">(</span><span class="n">dirt</span><span class="p">,</span> <span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="mi">2</span><span class="p">))</span>
+    <span class="n">park</span><span class="o">.</span><span class="n">add_thing</span><span class="p">(</span><span class="n">dogfood</span><span class="p">,</span> <span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="mi">5</span><span class="p">))</span>
+    <span class="n">park</span><span class="o">.</span><span class="n">add_thing</span><span class="p">(</span><span class="n">water</span><span class="p">,</span> <span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="mi">7</span><span class="p">))</span>
+
+    <span class="n">park</span><span class="o">.</span><span class="n">run</span><span class="p">(</span><span class="n">steps</span><span class="p">)</span>
+
+<span class="k">if</span> <span class="vm">__name__</span> <span class="o">==</span> <span class="s2">&quot;__main__&quot;</span><span class="p">:</span>
+    <span class="n">run</span><span class="p">()</span>
+
+</pre></div>
+    </div>
+  </div>
+  <div class='clearall'></div>
+</div>
+</body>

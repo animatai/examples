@@ -1,0 +1,120 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <meta http-equiv="content-type" content="text/html;charset=utf-8">
+  <title>config.py</title>
+  <link rel="stylesheet" href="pycco.css">
+</head>
+<body>
+<div id='container'>
+  <div id="background"></div>
+  <div class='section'>
+    <div class='docs'><h1>config.py</h1></div>
+  </div>
+  <div class='clearall'>
+  <div class='section' id='section-0'>
+    <div class='docs'>
+      <div class='octowrap'>
+        <a class='octothorpe' href='#section-0'>#</a>
+      </div>
+      <p>pylint: disable=missing-docstring, wrong-import-position</p>
+<p>Configuration for worlds (environments and agents)</p>
+<p>Worlds to be used are configured in this file. Two things are needed:
+1. import the python file with the world
+2. update the handler</p>
+<p>There are a some examples that shows how this is done.</p>
+    </div>
+    <div class='code'>
+      <div class="highlight"><pre><span></span></pre></div>
+    </div>
+  </div>
+  <div class='clearall'></div>
+  <div class='section' id='section-1'>
+    <div class='docs'>
+      <div class='octowrap'>
+        <a class='octothorpe' href='#section-1'>#</a>
+      </div>
+      <p>Change to the IP address of the server when using a public server</p>
+    </div>
+    <div class='code'>
+      <div class="highlight"><pre><span class="n">SERVER_ADDRESS</span> <span class="o">=</span> <span class="s1">&#39;localhost&#39;</span>
+<span class="n">SERVER_PORT</span> <span class="o">=</span> <span class="mi">5678</span></pre></div>
+    </div>
+  </div>
+  <div class='clearall'></div>
+  <div class='section' id='section-2'>
+    <div class='docs'>
+      <div class='octowrap'>
+        <a class='octothorpe' href='#section-2'>#</a>
+      </div>
+      <p>Import the exmaples, these are found here: https://github.com/animatai/examples</p>
+    </div>
+    <div class='code'>
+      <div class="highlight"><pre><span class="kn">import</span> <span class="nn">grid</span>
+<span class="kn">import</span> <span class="nn">blind_dog</span>
+<span class="kn">import</span> <span class="nn">random_agents</span>
+<span class="kn">import</span> <span class="nn">random_mom_and_calf</span>
+<span class="kn">import</span> <span class="nn">random_mom_and_calf2</span></pre></div>
+    </div>
+  </div>
+  <div class='clearall'></div>
+  <div class='section' id='section-3'>
+    <div class='docs'>
+      <div class='octowrap'>
+        <a class='octothorpe' href='#section-3'>#</a>
+      </div>
+      <p>Add a elif statement for each world like this:</p>
+<p>elif message == 'blind_dog':
+       blind_dog.run(wss_)</p>
+    </div>
+    <div class='code'>
+      <div class="highlight"><pre></pre></div>
+    </div>
+  </div>
+  <div class='clearall'></div>
+  <div class='section' id='section-4'>
+    <div class='docs'>
+      <div class='octowrap'>
+        <a class='octothorpe' href='#section-4'>#</a>
+      </div>
+      
+    </div>
+    <div class='code'>
+      <div class="highlight"><pre><span class="k">def</span> <span class="nf">handler</span><span class="p">(</span><span class="n">wss_</span><span class="p">,</span> <span class="n">world</span><span class="p">,</span> <span class="n">steps</span><span class="p">,</span> <span class="n">seed</span><span class="p">):</span>
+    <span class="k">if</span> <span class="n">world</span> <span class="o">==</span> <span class="s1">&#39;random_agents&#39;</span><span class="p">:</span>
+        <span class="n">random_agents</span><span class="o">.</span><span class="n">run</span><span class="p">(</span><span class="n">wss_</span><span class="p">,</span> <span class="n">steps</span><span class="p">)</span>
+
+    <span class="k">elif</span> <span class="n">world</span> <span class="o">==</span> <span class="s1">&#39;blind_dog&#39;</span><span class="p">:</span>
+        <span class="n">blind_dog</span><span class="o">.</span><span class="n">run</span><span class="p">(</span><span class="n">wss_</span><span class="p">,</span> <span class="n">steps</span><span class="p">)</span>
+
+    <span class="k">elif</span> <span class="n">world</span> <span class="o">==</span> <span class="s1">&#39;random_mom_and_calf&#39;</span><span class="p">:</span>
+        <span class="n">random_mom_and_calf</span><span class="o">.</span><span class="n">run</span><span class="p">(</span><span class="n">wss_</span><span class="p">,</span> <span class="n">steps</span><span class="p">,</span> <span class="n">seed</span><span class="p">)</span>
+
+    <span class="k">elif</span> <span class="n">world</span> <span class="o">==</span> <span class="s1">&#39;random_mom_and_calf2&#39;</span><span class="p">:</span>
+        <span class="n">random_mom_and_calf2</span><span class="o">.</span><span class="n">run</span><span class="p">(</span><span class="n">wss_</span><span class="p">,</span> <span class="n">steps</span><span class="p">,</span> <span class="n">seed</span><span class="p">)</span>
+
+    <span class="k">elif</span> <span class="n">world</span> <span class="o">==</span> <span class="s1">&#39;grid&#39;</span><span class="p">:</span>
+        <span class="n">grid</span><span class="o">.</span><span class="n">run</span><span class="p">(</span><span class="n">wss_</span><span class="p">,</span> <span class="n">steps</span><span class="p">,</span> <span class="n">seed</span><span class="p">)</span></pre></div>
+    </div>
+  </div>
+  <div class='clearall'></div>
+  <div class='section' id='section-5'>
+    <div class='docs'>
+      <div class='octowrap'>
+        <a class='octothorpe' href='#section-5'>#</a>
+      </div>
+      <p>elif message == 'animat':
+   (outputPath, outputDir) = animats.main.getOutputPath()
+   animats.main.run(param, outputPath, outputDir, wss_)</p>
+    </div>
+    <div class='code'>
+      <div class="highlight"><pre>    <span class="k">else</span><span class="p">:</span>
+        <span class="n">wss_</span><span class="o">.</span><span class="n">send_print_message</span><span class="p">((</span><span class="s1">&#39;unknown world &amp;quot;&#39;</span> <span class="o">+</span> <span class="n">world</span> <span class="o">+</span>
+                                 <span class="s1">&#39;&amp;quot; with param &amp;quot;&#39;</span> <span class="o">+</span> <span class="nb">str</span><span class="p">(</span><span class="n">steps</span><span class="p">)</span> <span class="o">+</span> <span class="s1">&#39;&amp;quot;&#39;</span><span class="p">))</span>
+
+</pre></div>
+    </div>
+  </div>
+  <div class='clearall'></div>
+</div>
+</body>

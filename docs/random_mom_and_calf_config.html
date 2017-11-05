@@ -1,0 +1,160 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <meta http-equiv="content-type" content="text/html;charset=utf-8">
+  <title>random_mom_and_calf_config.py</title>
+  <link rel="stylesheet" href="pycco.css">
+</head>
+<body>
+<div id='container'>
+  <div id="background"></div>
+  <div class='section'>
+    <div class='docs'><h1>random_mom_and_calf_config.py</h1></div>
+  </div>
+  <div class='clearall'>
+  <div class='section' id='section-0'>
+    <div class='docs'>
+      <div class='octowrap'>
+        <a class='octothorpe' href='#section-0'>#</a>
+      </div>
+      <p>pylint: disable=missing-docstring, global-statement, invalid-name, too-few-public-methods, no-self-use</p>
+<p>A random mother cachelot and calf</p>
+<p>Copyright (C) 2017  Jonas Colmsjö, Claes Strannegård</p>
+<p>Configuration that is common for the different cachelot examples.</p>
+    </div>
+    <div class='code'>
+      <div class="highlight"><pre><span></span><span class="kn">from</span> <span class="nn">gzutils.gzutils</span> <span class="kn">import</span> <span class="n">DotDict</span><span class="p">,</span> <span class="n">get_output_dir</span>
+
+<span class="kn">from</span> <span class="nn">sea</span> <span class="kn">import</span> <span class="n">Squid</span>
+
+<span class="n">terrain</span> <span class="o">=</span> <span class="p">(</span><span class="s1">&#39;WWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWW</span><span class="se">\n</span><span class="s1">&#39;</span> <span class="o">+</span>
+           <span class="s1">&#39;WWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWW</span><span class="se">\n</span><span class="s1">&#39;</span> <span class="o">+</span>
+           <span class="s1">&#39;WWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWW</span><span class="se">\n</span><span class="s1">&#39;</span> <span class="o">+</span>
+           <span class="s1">&#39;WWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWW</span><span class="se">\n</span><span class="s1">&#39;</span> <span class="o">+</span>
+           <span class="s1">&#39;WWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWW</span><span class="se">\n</span><span class="s1">&#39;</span> <span class="o">+</span>
+           <span class="s1">&#39;WWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWW</span><span class="se">\n</span><span class="s1">&#39;</span> <span class="o">+</span>
+           <span class="s1">&#39;WWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWW&#39;</span><span class="p">)</span></pre></div>
+    </div>
+  </div>
+  <div class='clearall'></div>
+  <div class='section' id='section-1'>
+    <div class='docs'>
+      <div class='octowrap'>
+        <a class='octothorpe' href='#section-1'>#</a>
+      </div>
+      <p>the mother and calf have separate and identical lanes</p>
+    </div>
+    <div class='code'>
+      <div class="highlight"><pre><span class="n">things</span> <span class="o">=</span> <span class="p">(</span><span class="s1">&#39;XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX</span><span class="se">\n</span><span class="s1">&#39;</span> <span class="o">+</span>
+          <span class="s1">&#39;                                                  </span><span class="se">\n</span><span class="s1">&#39;</span> <span class="o">+</span>
+          <span class="s1">&#39;  ssss                                    ssss    </span><span class="se">\n</span><span class="s1">&#39;</span> <span class="o">+</span>
+          <span class="s1">&#39;XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX</span><span class="se">\n</span><span class="s1">&#39;</span> <span class="o">+</span>
+          <span class="s1">&#39;                                                  </span><span class="se">\n</span><span class="s1">&#39;</span> <span class="o">+</span>
+          <span class="s1">&#39;  ssss                                    ssss    </span><span class="se">\n</span><span class="s1">&#39;</span> <span class="o">+</span>
+          <span class="s1">&#39;XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX&#39;</span><span class="p">)</span></pre></div>
+    </div>
+  </div>
+  <div class='clearall'></div>
+  <div class='section' id='section-2'>
+    <div class='docs'>
+      <div class='octowrap'>
+        <a class='octothorpe' href='#section-2'>#</a>
+      </div>
+      <p>the mother and calf have separate and identical lanes</p>
+    </div>
+    <div class='code'>
+      <div class="highlight"><pre><span class="n">exogenous_things</span> <span class="o">=</span> <span class="p">(</span><span class="s1">&#39;                                                  </span><span class="se">\n</span><span class="s1">&#39;</span> <span class="o">+</span>
+                    <span class="s1">&#39;                                                  </span><span class="se">\n</span><span class="s1">&#39;</span> <span class="o">+</span>
+                    <span class="s1">&#39;  ssss                                    ssss    </span><span class="se">\n</span><span class="s1">&#39;</span> <span class="o">+</span>
+                    <span class="s1">&#39;                                                  </span><span class="se">\n</span><span class="s1">&#39;</span> <span class="o">+</span>
+                    <span class="s1">&#39;                                                  </span><span class="se">\n</span><span class="s1">&#39;</span> <span class="o">+</span>
+                    <span class="s1">&#39;  ssss                                    ssss    </span><span class="se">\n</span><span class="s1">&#39;</span> <span class="o">+</span>
+                    <span class="s1">&#39;                                                  &#39;</span><span class="p">)</span>
+
+
+<span class="n">mom_start_pos</span> <span class="o">=</span> <span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="mi">1</span><span class="p">)</span>
+<span class="n">calf_start_pos</span> <span class="o">=</span> <span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="mi">4</span><span class="p">)</span></pre></div>
+    </div>
+  </div>
+  <div class='clearall'></div>
+  <div class='section' id='section-3'>
+    <div class='docs'>
+      <div class='octowrap'>
+        <a class='octothorpe' href='#section-3'>#</a>
+      </div>
+      <p><code>motors</code> can perform several <code>actions</code>. The Sea Environment has four available
+<code>actions</code>: <code>eat</code>, <code>down</code>, <code>up</code>, <code>forward</code>. There is also one <code>nsaction</code> which is <code>sing</code>
+<code>sensors</code> are boolean variables indicating percepts (<code>Things</code> of different kinds)
+that are perceived. Active <code>sensors</code> are sent as input to the <code>program</code></p>
+    </div>
+    <div class='code'>
+      <div class="highlight"><pre><span class="n">OPTIONS</span> <span class="o">=</span> <span class="n">DotDict</span><span class="p">({</span>
+    <span class="s1">&#39;output_path&#39;</span><span class="p">:</span> <span class="n">get_output_dir</span><span class="p">(</span><span class="nb">file</span><span class="o">=</span><span class="vm">__file__</span><span class="p">),</span>
+    <span class="s1">&#39;terrain&#39;</span><span class="p">:</span> <span class="n">terrain</span><span class="o">.</span><span class="n">split</span><span class="p">(</span><span class="s1">&#39;</span><span class="se">\n</span><span class="s1">&#39;</span><span class="p">),</span>
+    <span class="s1">&#39;things&#39;</span><span class="p">:</span> <span class="n">things</span><span class="o">.</span><span class="n">split</span><span class="p">(</span><span class="s1">&#39;</span><span class="se">\n</span><span class="s1">&#39;</span><span class="p">),</span>
+    <span class="s1">&#39;exogenous_things&#39;</span><span class="p">:</span> <span class="n">exogenous_things</span><span class="o">.</span><span class="n">split</span><span class="p">(</span><span class="s1">&#39;</span><span class="se">\n</span><span class="s1">&#39;</span><span class="p">),</span>
+    <span class="s1">&#39;exogenous_things_prob&#39;</span><span class="p">:</span> <span class="mf">0.005</span><span class="p">,</span>
+    <span class="s1">&#39;objectives&#39;</span><span class="p">:</span> <span class="p">{</span><span class="s1">&#39;energy&#39;</span><span class="p">:</span> <span class="mf">1.0</span><span class="p">},</span>
+    <span class="s1">&#39;rewards&#39;</span><span class="p">:{</span>
+        <span class="s1">&#39;sing_eat_and_forward&#39;</span><span class="p">:</span> <span class="p">{</span>
+            <span class="n">Squid</span><span class="p">:</span> <span class="p">{</span>
+                <span class="s1">&#39;energy&#39;</span><span class="p">:</span> <span class="mf">0.1</span>
+            <span class="p">},</span>
+            <span class="bp">None</span><span class="p">:</span> <span class="p">{</span>
+                <span class="s1">&#39;energy&#39;</span><span class="p">:</span> <span class="o">-</span><span class="mf">0.05</span>
+            <span class="p">}</span>
+        <span class="p">},</span>
+        <span class="s1">&#39;eat_and_forward&#39;</span><span class="p">:</span> <span class="p">{</span>
+            <span class="n">Squid</span><span class="p">:</span> <span class="p">{</span>
+                <span class="s1">&#39;energy&#39;</span><span class="p">:</span> <span class="mf">0.1</span>
+            <span class="p">},</span>
+            <span class="bp">None</span><span class="p">:</span> <span class="p">{</span>
+                <span class="s1">&#39;energy&#39;</span><span class="p">:</span> <span class="o">-</span><span class="mf">0.05</span>
+            <span class="p">}</span>
+        <span class="p">},</span>
+        <span class="s1">&#39;dive_and_forward&#39;</span><span class="p">:</span> <span class="p">{</span>
+            <span class="bp">None</span><span class="p">:</span> <span class="p">{</span>
+                <span class="s1">&#39;energy&#39;</span><span class="p">:</span> <span class="o">-</span><span class="mf">0.002</span>
+            <span class="p">}</span>
+        <span class="p">},</span>
+        <span class="s1">&#39;up_and_forward&#39;</span><span class="p">:</span> <span class="p">{</span>
+            <span class="bp">None</span><span class="p">:</span> <span class="p">{</span>
+                <span class="s1">&#39;energy&#39;</span><span class="p">:</span> <span class="o">-</span><span class="mf">0.001</span>
+            <span class="p">}</span>
+        <span class="p">},</span>
+        <span class="s1">&#39;forward&#39;</span><span class="p">:</span> <span class="p">{</span>
+            <span class="bp">None</span><span class="p">:</span> <span class="p">{</span>
+                <span class="s1">&#39;energy&#39;</span><span class="p">:</span> <span class="o">-</span><span class="mf">0.001</span>
+            <span class="p">}</span>
+        <span class="p">},</span>
+        <span class="bp">None</span><span class="p">:</span> <span class="p">{</span>
+            <span class="bp">None</span><span class="p">:</span> <span class="p">{</span>
+                <span class="s1">&#39;energy&#39;</span><span class="p">:</span> <span class="o">-</span><span class="mf">0.001</span>
+            <span class="p">}</span>
+        <span class="p">},</span>
+    <span class="p">},</span>
+    <span class="s1">&#39;wss_cfg&#39;</span><span class="p">:</span> <span class="p">{</span>
+        <span class="s1">&#39;numTilesPerSquare&#39;</span><span class="p">:</span> <span class="p">(</span><span class="mi">1</span><span class="p">,</span> <span class="mi">1</span><span class="p">),</span>
+        <span class="s1">&#39;drawGrid&#39;</span><span class="p">:</span> <span class="bp">True</span><span class="p">,</span>
+        <span class="s1">&#39;randomTerrain&#39;</span><span class="p">:</span> <span class="mi">0</span><span class="p">,</span>
+        <span class="s1">&#39;agents&#39;</span><span class="p">:</span> <span class="p">{</span>
+            <span class="s1">&#39;mom&#39;</span><span class="p">:</span> <span class="p">{</span>
+                <span class="s1">&#39;name&#39;</span><span class="p">:</span> <span class="s1">&#39;M&#39;</span><span class="p">,</span>
+                <span class="s1">&#39;pos&#39;</span><span class="p">:</span> <span class="n">mom_start_pos</span><span class="p">,</span>
+                <span class="s1">&#39;hidden&#39;</span><span class="p">:</span> <span class="bp">False</span>
+            <span class="p">},</span>
+            <span class="s1">&#39;calf&#39;</span><span class="p">:</span> <span class="p">{</span>
+                <span class="s1">&#39;name&#39;</span><span class="p">:</span> <span class="s1">&#39;c&#39;</span><span class="p">,</span>
+                <span class="s1">&#39;pos&#39;</span><span class="p">:</span> <span class="n">calf_start_pos</span><span class="p">,</span>
+                <span class="s1">&#39;hidden&#39;</span><span class="p">:</span> <span class="bp">False</span>
+            <span class="p">}</span>
+        <span class="p">}</span>
+    <span class="p">}</span>
+<span class="p">})</span>
+
+</pre></div>
+    </div>
+  </div>
+  <div class='clearall'></div>
+</div>
+</body>

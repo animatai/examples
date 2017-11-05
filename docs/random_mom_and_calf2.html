@@ -1,0 +1,361 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <meta http-equiv="content-type" content="text/html;charset=utf-8">
+  <title>random_mom_and_calf2.py</title>
+  <link rel="stylesheet" href="pycco.css">
+</head>
+<body>
+<div id='container'>
+  <div id="background"></div>
+  <div class='section'>
+    <div class='docs'><h1>random_mom_and_calf2.py</h1></div>
+  </div>
+  <div class='clearall'>
+  <div class='section' id='section-0'>
+    <div class='docs'>
+      <div class='octowrap'>
+        <a class='octothorpe' href='#section-0'>#</a>
+      </div>
+      <p>pylint: disable=missing-docstring, global-statement, invalid-name, too-few-public-methods, no-self-use</p>
+<p>A random mother cachelot and calf</p>
+<p>Copyright (C) 2017  Jonas Colmsjö, Claes Strannegård</p>
+<p>This is an extention of the <code>random_mom_and_calf</code> example where the mom and
+calf are implemented using classes that are inheriting the <code>Agent</code>
+class. The behaviour is now implemented using the <code>Network</code> and <code>MotorNetwork</code>
+classes. The <code>Mom</code> and <code>Calf</code> classes shows two slightly different ways
+the classes can be used.</p>
+    </div>
+    <div class='code'>
+      <div class="highlight"><pre><span></span><span class="kn">import</span> <span class="nn">random</span>
+<span class="kn">from</span> <span class="nn">functools</span> <span class="kn">import</span> <span class="n">partial</span>
+
+<span class="kn">from</span> <span class="nn">animatai.agents</span> <span class="kn">import</span> <span class="n">Agent</span>
+<span class="kn">from</span> <span class="nn">animatai.network</span> <span class="kn">import</span> <span class="n">Network</span><span class="p">,</span> <span class="n">MotorNetwork</span>
+
+<span class="kn">from</span> <span class="nn">toolz.curried</span> <span class="kn">import</span> <span class="n">do</span>
+<span class="kn">from</span> <span class="nn">toolz.functoolz</span> <span class="kn">import</span> <span class="n">compose</span>
+<span class="kn">from</span> <span class="nn">gzutils.gzutils</span> <span class="kn">import</span> <span class="n">Logging</span><span class="p">,</span> <span class="n">unpack</span>
+
+<span class="kn">from</span> <span class="nn">sea</span> <span class="kn">import</span> <span class="n">Sea</span><span class="p">,</span> <span class="n">Song</span><span class="p">,</span> <span class="n">Squid</span>
+<span class="kn">from</span> <span class="nn">random_mom_and_calf_config</span> <span class="kn">import</span> <span class="n">mom_start_pos</span><span class="p">,</span> <span class="n">calf_start_pos</span><span class="p">,</span> <span class="n">OPTIONS</span></pre></div>
+    </div>
+  </div>
+  <div class='clearall'></div>
+  <div class='section' id='section-1'>
+    <div class='docs'>
+      <div class='octowrap'>
+        <a class='octothorpe' href='#section-1'>#</a>
+      </div>
+      <h1>Setup logging</h1>
+    </div>
+    <div class='code'>
+      <div class="highlight"><pre><span class="n">DEBUG_MODE</span> <span class="o">=</span> <span class="bp">True</span>
+<span class="n">l</span> <span class="o">=</span> <span class="n">Logging</span><span class="p">(</span><span class="s1">&#39;random_mom_and_calf2&#39;</span><span class="p">,</span> <span class="n">DEBUG_MODE</span><span class="p">)</span></pre></div>
+    </div>
+  </div>
+  <div class='clearall'></div>
+  <div class='section' id='section-2'>
+    <div class='docs'>
+      <div class='octowrap'>
+        <a class='octothorpe' href='#section-2'>#</a>
+      </div>
+      <p>Mom that moves by random until squid is found. Move forward when there is
+squid and sing. When there is no squid, move forward, upward or dive
+randomly.</p>
+<p>The network consists of one <code>SENSOR</code> for <code>Squid</code> and three <code>RAND</code> (random) nodes
+each with a probability of 0.3 of being True. The eight states the three
+RAND nodes generate are mapped to the motors: <code>forward</code>, <code>dive_and_forward</code>,
+<code>up_and_forward</code>. The <code>SENSOR</code> is mapped to the <code>motor sing_eat_and_forward</code>.
+Mapping states to motors is done using a <code>dict</code> here.</p>
+<p>Pseudocode:
+```
+                        r1, r2, r3 &lt;= RAND, RAND, RAND
+eat_sing_and_forward &lt;= s1         &lt;= SENSOR(Squid)
+forward              &lt;= n2         &lt;= NOT(s1, n3, n4)
+dive_and_forward     &lt;= n3         &lt;= AND(NOT(s1), OR(AND(r1, NOT(r2, r3)), AND(r3, NOT(r1, r2))))
+         rewrite using ONE            AND(NOT(s1), OR(ONE(r1, [r2, r3], ONE(r3, [r1, r2]))))
+up_and_forward       &lt;= n4         &lt;= AND(NOT(s1), NOT(r1, r2, r3))</p>
+<p>```</p>
+    </div>
+    <div class='code'>
+      <div class="highlight"><pre><span class="n">motors</span> <span class="o">=</span> <span class="p">[</span><span class="s1">&#39;sing_eat_and_forward&#39;</span><span class="p">,</span> <span class="s1">&#39;forward&#39;</span><span class="p">,</span> <span class="s1">&#39;dive_and_forward&#39;</span><span class="p">,</span>
+          <span class="s1">&#39;up_and_forward&#39;</span><span class="p">,</span> <span class="s1">&#39;eat_and_forward&#39;</span><span class="p">]</span></pre></div>
+    </div>
+  </div>
+  <div class='clearall'></div>
+  <div class='section' id='section-3'>
+    <div class='docs'>
+      <div class='octowrap'>
+        <a class='octothorpe' href='#section-3'>#</a>
+      </div>
+      <p>motors</p>
+    </div>
+    <div class='code'>
+      <div class="highlight"><pre><span class="n">sing_eat_and_forward</span><span class="p">,</span> <span class="n">forward</span><span class="p">,</span> <span class="n">dive_and_forward</span> <span class="o">=</span> <span class="nb">frozenset</span><span class="p">([</span><span class="mi">0</span><span class="p">]),</span> <span class="nb">frozenset</span><span class="p">([</span><span class="mi">1</span><span class="p">]),</span> <span class="nb">frozenset</span><span class="p">([</span><span class="mi">2</span><span class="p">])</span>
+<span class="n">up_and_forward</span><span class="p">,</span> <span class="n">eat_and_forward</span> <span class="o">=</span> <span class="nb">frozenset</span><span class="p">([</span><span class="mi">3</span><span class="p">]),</span> <span class="nb">frozenset</span><span class="p">([</span><span class="mi">4</span><span class="p">])</span>
+
+<span class="n">motors_to_action</span> <span class="o">=</span> <span class="p">{</span><span class="n">sing_eat_and_forward</span><span class="p">:</span> <span class="s1">&#39;sing_eat_and_forward&#39;</span><span class="p">,</span>
+                    <span class="n">forward</span><span class="p">:</span> <span class="s1">&#39;forward&#39;</span><span class="p">,</span>
+                    <span class="n">dive_and_forward</span><span class="p">:</span> <span class="s1">&#39;dive_and_forward&#39;</span><span class="p">,</span>
+                    <span class="n">up_and_forward</span><span class="p">:</span> <span class="s1">&#39;up_and_forward&#39;</span><span class="p">,</span>
+                    <span class="n">eat_and_forward</span><span class="p">:</span> <span class="s1">&#39;eat_and_forward&#39;</span><span class="p">,</span>
+                    <span class="s1">&#39;*&#39;</span><span class="p">:</span> <span class="s1">&#39;-&#39;</span><span class="p">}</span></pre></div>
+    </div>
+  </div>
+  <div class='clearall'></div>
+  <div class='section' id='section-4'>
+    <div class='docs'>
+      <div class='octowrap'>
+        <a class='octothorpe' href='#section-4'>#</a>
+      </div>
+      
+    </div>
+    <div class='code'>
+      <div class="highlight"><pre><span class="k">class</span> <span class="nc">Mom</span><span class="p">(</span><span class="n">Agent</span><span class="p">):</span></pre></div>
+    </div>
+  </div>
+  <div class='clearall'></div>
+  <div class='section' id='section-5'>
+    <div class='docs'>
+      <div class='octowrap'>
+        <a class='octothorpe' href='#section-5'>#</a>
+      </div>
+      
+    </div>
+    <div class='code'>
+      <div class="highlight"><pre>    <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span></pre></div>
+    </div>
+  </div>
+  <div class='clearall'></div>
+  <div class='section' id='section-6'>
+    <div class='docs'>
+      <div class='octowrap'>
+        <a class='octothorpe' href='#section-6'>#</a>
+      </div>
+      <p>pylint: disable=line-too-long, too-many-locals</p>
+    </div>
+    <div class='code'>
+      <div class="highlight"><pre>        <span class="nb">super</span><span class="p">()</span><span class="o">.</span><span class="fm">__init__</span><span class="p">(</span><span class="bp">None</span><span class="p">,</span> <span class="s1">&#39;mom&#39;</span><span class="p">)</span>
+
+        <span class="n">N</span> <span class="o">=</span> <span class="n">Network</span><span class="p">(</span><span class="bp">None</span><span class="p">,</span> <span class="p">{</span><span class="s1">&#39;energy&#39;</span><span class="p">:</span> <span class="mf">1.0</span><span class="p">})</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">status</span> <span class="o">=</span> <span class="n">N</span><span class="o">.</span><span class="n">get_NEEDs</span><span class="p">()</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">status_history</span> <span class="o">=</span> <span class="p">{</span><span class="s1">&#39;energy&#39;</span><span class="p">:[]}</span>
+
+        <span class="n">M</span> <span class="o">=</span> <span class="n">MotorNetwork</span><span class="p">(</span><span class="n">motors</span><span class="p">,</span> <span class="n">motors_to_action</span><span class="p">)</span>
+        <span class="n">SENSOR</span><span class="p">,</span> <span class="n">RAND</span><span class="p">,</span> <span class="n">AND</span> <span class="o">=</span> <span class="n">N</span><span class="o">.</span><span class="n">add_SENSOR_node</span><span class="p">,</span> <span class="n">N</span><span class="o">.</span><span class="n">add_RAND_node</span><span class="p">,</span> <span class="n">N</span><span class="o">.</span><span class="n">add_AND_node</span>
+        <span class="n">NOT</span><span class="p">,</span> <span class="n">OR</span> <span class="o">=</span> <span class="n">N</span><span class="o">.</span><span class="n">add_NOT_node</span><span class="p">,</span> <span class="n">N</span><span class="o">.</span><span class="n">add_OR_node</span>
+
+        <span class="n">s1</span><span class="p">,</span> <span class="n">r1</span><span class="p">,</span> <span class="n">r2</span><span class="p">,</span> <span class="n">r3</span> <span class="o">=</span> <span class="n">SENSOR</span><span class="p">(</span><span class="n">Squid</span><span class="p">),</span> <span class="n">RAND</span><span class="p">(</span><span class="mf">0.3</span><span class="p">),</span> <span class="n">RAND</span><span class="p">(</span><span class="mf">0.3</span><span class="p">),</span> <span class="n">RAND</span><span class="p">(</span><span class="mf">0.3</span><span class="p">)</span>
+        <span class="n">n3</span> <span class="o">=</span> <span class="n">AND</span><span class="p">([</span><span class="n">NOT</span><span class="p">([</span><span class="n">s1</span><span class="p">]),</span> <span class="n">OR</span><span class="p">([</span><span class="n">AND</span><span class="p">([</span><span class="n">r1</span><span class="p">,</span> <span class="n">NOT</span><span class="p">([</span><span class="n">r2</span><span class="p">,</span> <span class="n">r3</span><span class="p">])]),</span> <span class="n">AND</span><span class="p">([</span><span class="n">r3</span><span class="p">,</span> <span class="n">NOT</span><span class="p">([</span><span class="n">r1</span><span class="p">,</span> <span class="n">r2</span><span class="p">])])])])</span>
+        <span class="n">n4</span> <span class="o">=</span> <span class="n">AND</span><span class="p">([</span><span class="n">NOT</span><span class="p">([</span><span class="n">s1</span><span class="p">]),</span> <span class="n">NOT</span><span class="p">([</span><span class="n">r1</span><span class="p">,</span> <span class="n">r2</span><span class="p">,</span> <span class="n">r3</span><span class="p">])])</span>
+        <span class="n">n2</span> <span class="o">=</span> <span class="n">NOT</span><span class="p">([</span><span class="n">s1</span><span class="p">,</span> <span class="n">n3</span><span class="p">,</span> <span class="n">n4</span><span class="p">])</span>
+
+        <span class="n">state_to_motor</span> <span class="o">=</span> <span class="p">{</span><span class="nb">frozenset</span><span class="p">([</span><span class="n">s1</span><span class="p">]):</span> <span class="n">sing_eat_and_forward</span><span class="p">,</span>
+                          <span class="nb">frozenset</span><span class="p">([</span><span class="n">n2</span><span class="p">]):</span> <span class="n">forward</span><span class="p">,</span>
+                          <span class="nb">frozenset</span><span class="p">([</span><span class="n">n3</span><span class="p">]):</span> <span class="n">dive_and_forward</span><span class="p">,</span>
+                          <span class="nb">frozenset</span><span class="p">([</span><span class="n">n4</span><span class="p">]):</span> <span class="n">up_and_forward</span><span class="p">}</span>
+
+        <span class="n">l</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="s1">&#39;state_to_motor:&#39;</span><span class="p">,</span> <span class="n">state_to_motor</span><span class="p">)</span>
+        <span class="n">l</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="s1">&#39;motors_to_action:&#39;</span><span class="p">,</span> <span class="n">motors_to_action</span><span class="p">)</span></pre></div>
+    </div>
+  </div>
+  <div class='clearall'></div>
+  <div class='section' id='section-7'>
+    <div class='docs'>
+      <div class='octowrap'>
+        <a class='octothorpe' href='#section-7'>#</a>
+      </div>
+      <p>compose applies the functions from right to left</p>
+    </div>
+    <div class='code'>
+      <div class="highlight"><pre>        <span class="bp">self</span><span class="o">.</span><span class="n">program</span> <span class="o">=</span> <span class="n">compose</span><span class="p">(</span><span class="n">do</span><span class="p">(</span><span class="n">partial</span><span class="p">(</span><span class="n">l</span><span class="o">.</span><span class="n">debug</span><span class="p">,</span> <span class="s1">&#39;Mom mnetwork.update&#39;</span><span class="p">))</span>
+                               <span class="p">,</span> <span class="n">M</span><span class="o">.</span><span class="n">update</span>
+                               <span class="p">,</span> <span class="n">do</span><span class="p">(</span><span class="n">partial</span><span class="p">(</span><span class="n">l</span><span class="o">.</span><span class="n">debug</span><span class="p">,</span> <span class="s1">&#39;Mom state_to_motor&#39;</span><span class="p">))</span>
+                               <span class="p">,</span> <span class="k">lambda</span> <span class="n">p</span><span class="p">:</span> <span class="n">state_to_motor</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="n">p</span><span class="p">[</span><span class="mi">0</span><span class="p">])</span>
+                               <span class="p">,</span> <span class="n">do</span><span class="p">(</span><span class="n">partial</span><span class="p">(</span><span class="n">l</span><span class="o">.</span><span class="n">debug</span><span class="p">,</span> <span class="n">N</span><span class="p">))</span>
+                               <span class="p">,</span> <span class="n">do</span><span class="p">(</span><span class="n">partial</span><span class="p">(</span><span class="n">l</span><span class="o">.</span><span class="n">debug</span><span class="p">,</span> <span class="s1">&#39;Mom filter interesting states&#39;</span><span class="p">))</span>
+                               <span class="p">,</span> <span class="k">lambda</span> <span class="n">p</span><span class="p">:</span> <span class="p">(</span><span class="n">p</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span> <span class="o">&amp;</span> <span class="p">{</span><span class="n">s1</span><span class="p">,</span> <span class="n">n2</span><span class="p">,</span> <span class="n">n3</span><span class="p">,</span> <span class="n">n4</span><span class="p">},</span> <span class="n">p</span><span class="p">[</span><span class="mi">1</span><span class="p">])</span>
+                               <span class="p">,</span> <span class="n">do</span><span class="p">(</span><span class="n">partial</span><span class="p">(</span><span class="n">l</span><span class="o">.</span><span class="n">debug</span><span class="p">,</span> <span class="s1">&#39;Mom network.update&#39;</span><span class="p">))</span>
+                               <span class="p">,</span> <span class="n">N</span><span class="o">.</span><span class="n">update</span>
+                               <span class="p">,</span> <span class="n">do</span><span class="p">(</span><span class="n">partial</span><span class="p">(</span><span class="n">l</span><span class="o">.</span><span class="n">debug</span><span class="p">,</span> <span class="s1">&#39;Mom percept&#39;</span><span class="p">))</span>
+                              <span class="p">)</span></pre></div>
+    </div>
+  </div>
+  <div class='clearall'></div>
+  <div class='section' id='section-8'>
+    <div class='docs'>
+      <div class='octowrap'>
+        <a class='octothorpe' href='#section-8'>#</a>
+      </div>
+      
+    </div>
+    <div class='code'>
+      <div class="highlight"><pre>    <span class="k">def</span> <span class="fm">__repr__</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="k">return</span> <span class="s1">&#39;&lt;{} ({})&gt;&#39;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="vm">__name__</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="vm">__class__</span><span class="o">.</span><span class="vm">__name__</span><span class="p">)</span></pre></div>
+    </div>
+  </div>
+  <div class='clearall'></div>
+  <div class='section' id='section-9'>
+    <div class='docs'>
+      <div class='octowrap'>
+        <a class='octothorpe' href='#section-9'>#</a>
+      </div>
+      <p>Calf that will by random until hearing song. Dive when hearing song.
+The world will not permit diving below the bottom surface, so it will
+just move forward.</p>
+    </div>
+    <div class='code'>
+      <div class="highlight"><pre><span class="k">class</span> <span class="nc">Calf</span><span class="p">(</span><span class="n">Agent</span><span class="p">):</span></pre></div>
+    </div>
+  </div>
+  <div class='clearall'></div>
+  <div class='section' id='section-10'>
+    <div class='docs'>
+      <div class='octowrap'>
+        <a class='octothorpe' href='#section-10'>#</a>
+      </div>
+      <p>pylint: disable=too-many-instance-attributes</p>
+    </div>
+    <div class='code'>
+      <div class="highlight"><pre></pre></div>
+    </div>
+  </div>
+  <div class='clearall'></div>
+  <div class='section' id='section-11'>
+    <div class='docs'>
+      <div class='octowrap'>
+        <a class='octothorpe' href='#section-11'>#</a>
+      </div>
+      
+    </div>
+    <div class='code'>
+      <div class="highlight"><pre>    <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span></pre></div>
+    </div>
+  </div>
+  <div class='clearall'></div>
+  <div class='section' id='section-12'>
+    <div class='docs'>
+      <div class='octowrap'>
+        <a class='octothorpe' href='#section-12'>#</a>
+      </div>
+      <p>pylint: disable=line-too-long</p>
+    </div>
+    <div class='code'>
+      <div class="highlight"><pre>        <span class="nb">super</span><span class="p">()</span><span class="o">.</span><span class="fm">__init__</span><span class="p">(</span><span class="bp">None</span><span class="p">,</span> <span class="s1">&#39;calf&#39;</span><span class="p">)</span>
+
+        <span class="n">N</span> <span class="o">=</span> <span class="n">Network</span><span class="p">(</span><span class="bp">None</span><span class="p">,</span> <span class="p">{</span><span class="s1">&#39;energy&#39;</span><span class="p">:</span> <span class="mf">1.0</span><span class="p">})</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">status</span> <span class="o">=</span> <span class="n">N</span><span class="o">.</span><span class="n">get_NEEDs</span><span class="p">()</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">status_history</span> <span class="o">=</span> <span class="p">{</span><span class="s1">&#39;energy&#39;</span><span class="p">:[]}</span>
+
+        <span class="n">s1</span> <span class="o">=</span> <span class="n">N</span><span class="o">.</span><span class="n">add_SENSOR_node</span><span class="p">(</span><span class="n">Squid</span><span class="p">)</span>
+        <span class="n">r1</span> <span class="o">=</span> <span class="n">N</span><span class="o">.</span><span class="n">add_RAND_node</span><span class="p">(</span><span class="mf">0.3</span><span class="p">)</span>
+        <span class="n">r2</span> <span class="o">=</span> <span class="n">N</span><span class="o">.</span><span class="n">add_RAND_node</span><span class="p">(</span><span class="mf">0.3</span><span class="p">)</span>
+        <span class="n">r3</span> <span class="o">=</span> <span class="n">N</span><span class="o">.</span><span class="n">add_RAND_node</span><span class="p">(</span><span class="mf">0.3</span><span class="p">)</span>
+        <span class="n">s2</span> <span class="o">=</span> <span class="n">N</span><span class="o">.</span><span class="n">add_SENSOR_node</span><span class="p">(</span><span class="n">Song</span><span class="p">)</span>
+
+        <span class="n">M</span> <span class="o">=</span> <span class="n">MotorNetwork</span><span class="p">(</span><span class="n">motors</span><span class="p">,</span> <span class="n">motors_to_action</span><span class="p">)</span>
+
+        <span class="n">state_to_motor</span> <span class="o">=</span> <span class="p">{</span><span class="nb">frozenset</span><span class="p">([</span><span class="n">r1</span><span class="p">,</span> <span class="n">r2</span><span class="p">,</span> <span class="n">r3</span><span class="p">]):</span> <span class="n">forward</span><span class="p">,</span>
+                          <span class="nb">frozenset</span><span class="p">([</span><span class="n">r1</span><span class="p">,</span> <span class="n">r2</span><span class="p">]):</span> <span class="n">forward</span><span class="p">,</span>
+                          <span class="nb">frozenset</span><span class="p">([</span><span class="n">r1</span><span class="p">,</span> <span class="n">r3</span><span class="p">]):</span> <span class="n">forward</span><span class="p">,</span>
+                          <span class="nb">frozenset</span><span class="p">([</span><span class="n">r2</span><span class="p">,</span> <span class="n">r3</span><span class="p">]):</span> <span class="n">forward</span><span class="p">,</span>
+                          <span class="nb">frozenset</span><span class="p">([</span><span class="n">r2</span><span class="p">]):</span> <span class="n">forward</span><span class="p">,</span>
+                          <span class="nb">frozenset</span><span class="p">([</span><span class="n">r3</span><span class="p">]):</span> <span class="n">up_and_forward</span><span class="p">,</span>
+                          <span class="nb">frozenset</span><span class="p">([</span><span class="n">r1</span><span class="p">]):</span> <span class="n">up_and_forward</span><span class="p">,</span>
+                          <span class="nb">frozenset</span><span class="p">([]):</span> <span class="n">dive_and_forward</span><span class="p">}</span></pre></div>
+    </div>
+  </div>
+  <div class='clearall'></div>
+  <div class='section' id='section-13'>
+    <div class='docs'>
+      <div class='octowrap'>
+        <a class='octothorpe' href='#section-13'>#</a>
+      </div>
+      <p>compose applies the functions from right to left</p>
+    </div>
+    <div class='code'>
+      <div class="highlight"><pre>        <span class="bp">self</span><span class="o">.</span><span class="n">program</span> <span class="o">=</span> <span class="n">compose</span><span class="p">(</span><span class="n">do</span><span class="p">(</span><span class="n">partial</span><span class="p">(</span><span class="n">l</span><span class="o">.</span><span class="n">debug</span><span class="p">,</span> <span class="s1">&#39;Calf mnetwork.update&#39;</span><span class="p">))</span>
+                               <span class="p">,</span> <span class="n">M</span><span class="o">.</span><span class="n">update</span>
+                               <span class="p">,</span> <span class="n">do</span><span class="p">(</span><span class="n">partial</span><span class="p">(</span><span class="n">l</span><span class="o">.</span><span class="n">debug</span><span class="p">,</span> <span class="s1">&#39;Calf state_to_motor&#39;</span><span class="p">))</span>
+                               <span class="p">,</span> <span class="k">lambda</span> <span class="n">p</span><span class="p">:</span> <span class="n">eat_and_forward</span> <span class="k">if</span> <span class="n">s1</span> <span class="ow">in</span> <span class="n">p</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span> <span class="k">else</span> <span class="p">(</span><span class="n">dive_and_forward</span> <span class="k">if</span> <span class="n">s2</span> <span class="ow">in</span> <span class="n">p</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span> <span class="k">else</span> <span class="n">up_and_forward</span><span class="p">)</span></pre></div>
+    </div>
+  </div>
+  <div class='clearall'></div>
+  <div class='section' id='section-14'>
+    <div class='docs'>
+      <div class='octowrap'>
+        <a class='octothorpe' href='#section-14'>#</a>
+      </div>
+      <p>, lambda s: eat_and_forward if s1 in s else (dive_and_forward if s2 in s else state_to_motor.get(s))</p>
+    </div>
+    <div class='code'>
+      <div class="highlight"><pre>                               <span class="p">,</span> <span class="k">lambda</span> <span class="n">p</span><span class="p">:</span> <span class="n">do</span><span class="p">(</span><span class="n">partial</span><span class="p">(</span><span class="n">l</span><span class="o">.</span><span class="n">info</span><span class="p">,</span> <span class="s1">&#39;--- CALF HEARD SONG, DIVING! ---&#39;</span><span class="p">))(</span><span class="n">p</span><span class="p">)</span> <span class="k">if</span> <span class="n">s2</span> <span class="ow">in</span> <span class="n">p</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span> <span class="k">else</span> <span class="n">p</span>
+                               <span class="p">,</span> <span class="k">lambda</span> <span class="n">p</span><span class="p">:</span> <span class="n">do</span><span class="p">(</span><span class="n">partial</span><span class="p">(</span><span class="n">l</span><span class="o">.</span><span class="n">info</span><span class="p">,</span> <span class="s1">&#39;--- CALF FOUND SQUID, EATING! ---&#39;</span><span class="p">))(</span><span class="n">p</span><span class="p">)</span> <span class="k">if</span> <span class="n">s1</span> <span class="ow">in</span> <span class="n">p</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span> <span class="k">else</span> <span class="n">p</span>
+                               <span class="p">,</span> <span class="n">do</span><span class="p">(</span><span class="n">partial</span><span class="p">(</span><span class="n">l</span><span class="o">.</span><span class="n">debug</span><span class="p">,</span> <span class="s1">&#39;Calf network.update&#39;</span><span class="p">))</span>
+                               <span class="p">,</span> <span class="n">N</span><span class="o">.</span><span class="n">update</span>
+                               <span class="p">,</span> <span class="n">do</span><span class="p">(</span><span class="n">partial</span><span class="p">(</span><span class="n">l</span><span class="o">.</span><span class="n">debug</span><span class="p">,</span> <span class="s1">&#39;Calf percept&#39;</span><span class="p">))</span>
+                              <span class="p">)</span></pre></div>
+    </div>
+  </div>
+  <div class='clearall'></div>
+  <div class='section' id='section-15'>
+    <div class='docs'>
+      <div class='octowrap'>
+        <a class='octothorpe' href='#section-15'>#</a>
+      </div>
+      
+    </div>
+    <div class='code'>
+      <div class="highlight"><pre>    <span class="k">def</span> <span class="fm">__repr__</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="k">return</span> <span class="s1">&#39;&lt;{} ({})&gt;&#39;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="vm">__name__</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="vm">__class__</span><span class="o">.</span><span class="vm">__name__</span><span class="p">)</span></pre></div>
+    </div>
+  </div>
+  <div class='clearall'></div>
+  <div class='section' id='section-16'>
+    <div class='docs'>
+      <div class='octowrap'>
+        <a class='octothorpe' href='#section-16'>#</a>
+      </div>
+      <h1>Main</h1>
+    </div>
+    <div class='code'>
+      <div class="highlight"><pre></pre></div>
+    </div>
+  </div>
+  <div class='clearall'></div>
+  <div class='section' id='section-17'>
+    <div class='docs'>
+      <div class='octowrap'>
+        <a class='octothorpe' href='#section-17'>#</a>
+      </div>
+      
+    </div>
+    <div class='code'>
+      <div class="highlight"><pre><span class="k">def</span> <span class="nf">run</span><span class="p">(</span><span class="n">wss</span><span class="o">=</span><span class="bp">None</span><span class="p">,</span> <span class="n">steps</span><span class="o">=</span><span class="bp">None</span><span class="p">,</span> <span class="n">seed</span><span class="o">=</span><span class="bp">None</span><span class="p">):</span>
+    <span class="n">steps</span> <span class="o">=</span> <span class="nb">int</span><span class="p">(</span><span class="n">steps</span><span class="p">)</span> <span class="k">if</span> <span class="n">steps</span> <span class="k">else</span> <span class="mi">10</span>
+    <span class="n">l</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span><span class="s1">&#39;Running random_mom_and_calf in&#39;</span><span class="p">,</span> <span class="nb">str</span><span class="p">(</span><span class="n">steps</span><span class="p">),</span> <span class="s1">&#39;steps with seed&#39;</span><span class="p">,</span> <span class="n">seed</span><span class="p">)</span>
+
+    <span class="n">random</span><span class="o">.</span><span class="n">seed</span><span class="p">(</span><span class="n">seed</span><span class="p">)</span>
+
+    <span class="n">options</span> <span class="o">=</span> <span class="n">OPTIONS</span>
+    <span class="n">options</span><span class="o">.</span><span class="n">wss</span> <span class="o">=</span> <span class="n">wss</span>
+    <span class="n">sea</span> <span class="o">=</span> <span class="n">Sea</span><span class="p">(</span><span class="n">options</span><span class="p">)</span>
+
+    <span class="n">mom</span> <span class="o">=</span> <span class="n">Mom</span><span class="p">()</span>
+    <span class="n">calf</span> <span class="o">=</span> <span class="n">Calf</span><span class="p">()</span>
+
+    <span class="n">sea</span><span class="o">.</span><span class="n">add_thing</span><span class="p">(</span><span class="n">mom</span><span class="p">,</span> <span class="n">mom_start_pos</span><span class="p">)</span>
+    <span class="n">sea</span><span class="o">.</span><span class="n">add_thing</span><span class="p">(</span><span class="n">calf</span><span class="p">,</span> <span class="n">calf_start_pos</span><span class="p">)</span>
+
+    <span class="n">sea</span><span class="o">.</span><span class="n">run</span><span class="p">(</span><span class="n">steps</span><span class="p">)</span>
+
+<span class="k">if</span> <span class="vm">__name__</span> <span class="o">==</span> <span class="s2">&quot;__main__&quot;</span><span class="p">:</span>
+    <span class="n">run</span><span class="p">()</span>
+
+</pre></div>
+    </div>
+  </div>
+  <div class='clearall'></div>
+</div>
+</body>

@@ -1,0 +1,258 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <meta http-equiv="content-type" content="text/html;charset=utf-8">
+  <title>sea.py</title>
+  <link rel="stylesheet" href="pycco.css">
+</head>
+<body>
+<div id='container'>
+  <div id="background"></div>
+  <div class='section'>
+    <div class='docs'><h1>sea.py</h1></div>
+  </div>
+  <div class='clearall'>
+  <div class='section' id='section-0'>
+    <div class='docs'>
+      <div class='octowrap'>
+        <a class='octothorpe' href='#section-0'>#</a>
+      </div>
+      <p>pylint: disable=missing-docstring, global-statement, invalid-name, too-few-public-methods, no-self-use</p>
+<p>A random Mother cachelot and calf</p>
+<p>Copyright (C) 2017  Jonas Colmsjö, Claes Strannegård</p>
+    </div>
+    <div class='code'>
+      <div class="highlight"><pre><span></span><span class="kn">from</span> <span class="nn">animatai.agents</span> <span class="kn">import</span> <span class="n">Thing</span><span class="p">,</span> <span class="n">Obstacle</span><span class="p">,</span> <span class="n">Direction</span><span class="p">,</span> <span class="n">NonSpatial</span><span class="p">,</span> <span class="n">XYEnvironment</span>
+<span class="kn">from</span> <span class="nn">gzutils.gzutils</span> <span class="kn">import</span> <span class="n">DotDict</span><span class="p">,</span> <span class="n">Logging</span></pre></div>
+    </div>
+  </div>
+  <div class='clearall'></div>
+  <div class='section' id='section-1'>
+    <div class='docs'>
+      <div class='octowrap'>
+        <a class='octothorpe' href='#section-1'>#</a>
+      </div>
+      <h1>Setup constants and logging</h1>
+    </div>
+    <div class='code'>
+      <div class="highlight"><pre><span class="n">DEBUG_MODE</span> <span class="o">=</span> <span class="bp">True</span>
+<span class="n">l</span> <span class="o">=</span> <span class="n">Logging</span><span class="p">(</span><span class="s1">&#39;sea&#39;</span><span class="p">,</span> <span class="n">DEBUG_MODE</span><span class="p">)</span></pre></div>
+    </div>
+  </div>
+  <div class='clearall'></div>
+  <div class='section' id='section-2'>
+    <div class='docs'>
+      <div class='octowrap'>
+        <a class='octothorpe' href='#section-2'>#</a>
+      </div>
+      <h1>Classes</h1>
+    </div>
+    <div class='code'>
+      <div class="highlight"><pre></pre></div>
+    </div>
+  </div>
+  <div class='clearall'></div>
+  <div class='section' id='section-3'>
+    <div class='docs'>
+      <div class='octowrap'>
+        <a class='octothorpe' href='#section-3'>#</a>
+      </div>
+      
+    </div>
+    <div class='code'>
+      <div class="highlight"><pre><span class="k">class</span> <span class="nc">Squid</span><span class="p">(</span><span class="n">Thing</span><span class="p">):</span>
+    <span class="k">pass</span></pre></div>
+    </div>
+  </div>
+  <div class='clearall'></div>
+  <div class='section' id='section-4'>
+    <div class='docs'>
+      <div class='octowrap'>
+        <a class='octothorpe' href='#section-4'>#</a>
+      </div>
+      <p>action 'sing' creates Song</p>
+    </div>
+    <div class='code'>
+      <div class="highlight"><pre><span class="k">class</span> <span class="nc">Song</span><span class="p">(</span><span class="n">NonSpatial</span><span class="p">):</span>
+    <span class="k">pass</span></pre></div>
+    </div>
+  </div>
+  <div class='clearall'></div>
+  <div class='section' id='section-5'>
+    <div class='docs'>
+      <div class='octowrap'>
+        <a class='octothorpe' href='#section-5'>#</a>
+      </div>
+      
+    </div>
+    <div class='code'>
+      <div class="highlight"><pre><span class="k">class</span> <span class="nc">Sea</span><span class="p">(</span><span class="n">XYEnvironment</span><span class="p">):</span></pre></div>
+    </div>
+  </div>
+  <div class='clearall'></div>
+  <div class='section' id='section-6'>
+    <div class='docs'>
+      <div class='octowrap'>
+        <a class='octothorpe' href='#section-6'>#</a>
+      </div>
+      <p>pylint: disable=arguments-differ</p>
+    </div>
+    <div class='code'>
+      <div class="highlight"><pre></pre></div>
+    </div>
+  </div>
+  <div class='clearall'></div>
+  <div class='section' id='section-7'>
+    <div class='docs'>
+      <div class='octowrap'>
+        <a class='octothorpe' href='#section-7'>#</a>
+      </div>
+      
+    </div>
+    <div class='code'>
+      <div class="highlight"><pre>    <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">options</span><span class="p">):</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">options</span> <span class="o">=</span> <span class="n">DotDict</span><span class="p">(</span><span class="n">options</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">options</span><span class="o">.</span><span class="n">ENV_ENCODING</span> <span class="o">=</span> <span class="p">[(</span><span class="s1">&#39;s&#39;</span><span class="p">,</span> <span class="n">Squid</span><span class="p">),</span> <span class="p">(</span><span class="s1">&#39;X&#39;</span><span class="p">,</span> <span class="n">Obstacle</span><span class="p">)]</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">options</span><span class="o">.</span><span class="n">save_history_for</span> <span class="o">=</span> <span class="p">[</span><span class="n">Squid</span><span class="p">]</span>
+        <span class="nb">super</span><span class="p">()</span><span class="o">.</span><span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">options</span><span class="p">)</span></pre></div>
+    </div>
+  </div>
+  <div class='clearall'></div>
+  <div class='section' id='section-8'>
+    <div class='docs'>
+      <div class='octowrap'>
+        <a class='octothorpe' href='#section-8'>#</a>
+      </div>
+      <p>to be used after the <strong>call</strong> function</p>
+    </div>
+    <div class='code'>
+      <div class="highlight"><pre>    <span class="k">def</span> <span class="nf">any_measurement_decreased</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="n">any_obj</span> <span class="o">=</span> <span class="nb">list</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">environment_history</span><span class="p">)[</span><span class="mi">0</span><span class="p">]</span>
+        <span class="n">i</span><span class="p">,</span> <span class="n">res</span> <span class="o">=</span> <span class="nb">len</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">environment_history</span><span class="p">[</span><span class="n">any_obj</span><span class="p">]),</span> <span class="bp">False</span>
+        <span class="k">if</span> <span class="n">i</span> <span class="o">&lt;</span> <span class="mi">2</span><span class="p">:</span>
+            <span class="k">return</span> <span class="bp">False</span>
+        <span class="k">for</span> <span class="bp">cls</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">save_history_for</span><span class="p">:</span>
+            <span class="n">res</span> <span class="o">=</span> <span class="n">res</span> <span class="ow">or</span> <span class="bp">self</span><span class="o">.</span><span class="n">environment_history</span><span class="p">[</span><span class="bp">cls</span><span class="p">][</span><span class="n">i</span><span class="p">]</span> <span class="o">&lt;</span> <span class="bp">self</span><span class="o">.</span><span class="n">environment_history</span><span class="p">[</span><span class="bp">cls</span><span class="p">][</span><span class="n">i</span> <span class="o">-</span> <span class="mi">1</span><span class="p">]</span>
+        <span class="k">return</span> <span class="n">res</span></pre></div>
+    </div>
+  </div>
+  <div class='clearall'></div>
+  <div class='section' id='section-9'>
+    <div class='docs'>
+      <div class='octowrap'>
+        <a class='octothorpe' href='#section-9'>#</a>
+      </div>
+      
+    </div>
+    <div class='code'>
+      <div class="highlight"><pre>    <span class="k">def</span> <span class="nf">execute_action</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">agent</span><span class="p">,</span> <span class="n">action</span><span class="p">,</span> <span class="n">time</span><span class="p">):</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">show_message</span><span class="p">((</span><span class="n">agent</span><span class="o">.</span><span class="vm">__name__</span> <span class="o">+</span> <span class="s1">&#39; performing &#39;</span> <span class="o">+</span> <span class="nb">str</span><span class="p">(</span><span class="n">action</span><span class="p">)</span> <span class="o">+</span> <span class="s1">&#39; at location &#39;</span> <span class="o">+</span>
+                           <span class="nb">str</span><span class="p">(</span><span class="n">agent</span><span class="o">.</span><span class="n">location</span><span class="p">)</span> <span class="o">+</span> <span class="s1">&#39; and time &#39;</span> <span class="o">+</span> <span class="nb">str</span><span class="p">(</span><span class="n">time</span><span class="p">)))</span></pre></div>
+    </div>
+  </div>
+  <div class='clearall'></div>
+  <div class='section' id='section-10'>
+    <div class='docs'>
+      <div class='octowrap'>
+        <a class='octothorpe' href='#section-10'>#</a>
+      </div>
+      
+    </div>
+    <div class='code'>
+      <div class="highlight"><pre>        <span class="k">def</span> <span class="nf">up</span><span class="p">():</span>
+            <span class="n">agent</span><span class="o">.</span><span class="n">direction</span> <span class="o">+=</span> <span class="n">Direction</span><span class="o">.</span><span class="n">L</span>
+            <span class="n">agent</span><span class="o">.</span><span class="n">bump</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">move_to</span><span class="p">(</span><span class="n">agent</span><span class="p">,</span> <span class="n">agent</span><span class="o">.</span><span class="n">direction</span><span class="o">.</span><span class="n">move_forward</span><span class="p">(</span><span class="n">agent</span><span class="o">.</span><span class="n">location</span><span class="p">))</span>
+            <span class="n">agent</span><span class="o">.</span><span class="n">direction</span> <span class="o">+=</span> <span class="n">Direction</span><span class="o">.</span><span class="n">R</span></pre></div>
+    </div>
+  </div>
+  <div class='clearall'></div>
+  <div class='section' id='section-11'>
+    <div class='docs'>
+      <div class='octowrap'>
+        <a class='octothorpe' href='#section-11'>#</a>
+      </div>
+      
+    </div>
+    <div class='code'>
+      <div class="highlight"><pre>        <span class="k">def</span> <span class="nf">down</span><span class="p">():</span>
+            <span class="n">agent</span><span class="o">.</span><span class="n">direction</span> <span class="o">+=</span> <span class="n">Direction</span><span class="o">.</span><span class="n">R</span>
+            <span class="n">agent</span><span class="o">.</span><span class="n">bump</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">move_to</span><span class="p">(</span><span class="n">agent</span><span class="p">,</span> <span class="n">agent</span><span class="o">.</span><span class="n">direction</span><span class="o">.</span><span class="n">move_forward</span><span class="p">(</span><span class="n">agent</span><span class="o">.</span><span class="n">location</span><span class="p">))</span>
+            <span class="n">agent</span><span class="o">.</span><span class="n">direction</span> <span class="o">+=</span> <span class="n">Direction</span><span class="o">.</span><span class="n">L</span></pre></div>
+    </div>
+  </div>
+  <div class='clearall'></div>
+  <div class='section' id='section-12'>
+    <div class='docs'>
+      <div class='octowrap'>
+        <a class='octothorpe' href='#section-12'>#</a>
+      </div>
+      
+    </div>
+    <div class='code'>
+      <div class="highlight"><pre>        <span class="k">def</span> <span class="nf">forward</span><span class="p">():</span>
+            <span class="n">agent</span><span class="o">.</span><span class="n">bump</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">move_to</span><span class="p">(</span><span class="n">agent</span><span class="p">,</span> <span class="n">agent</span><span class="o">.</span><span class="n">direction</span><span class="o">.</span><span class="n">move_forward</span><span class="p">(</span><span class="n">agent</span><span class="o">.</span><span class="n">location</span><span class="p">))</span></pre></div>
+    </div>
+  </div>
+  <div class='clearall'></div>
+  <div class='section' id='section-13'>
+    <div class='docs'>
+      <div class='octowrap'>
+        <a class='octothorpe' href='#section-13'>#</a>
+      </div>
+      <p>a torus world</p>
+    </div>
+    <div class='code'>
+      <div class="highlight"><pre>            <span class="n">agent</span><span class="o">.</span><span class="n">location</span> <span class="o">=</span> <span class="p">(</span><span class="n">agent</span><span class="o">.</span><span class="n">location</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span> <span class="o">%</span> <span class="bp">self</span><span class="o">.</span><span class="n">width</span><span class="p">,</span> <span class="n">agent</span><span class="o">.</span><span class="n">location</span><span class="p">[</span><span class="mi">1</span><span class="p">])</span></pre></div>
+    </div>
+  </div>
+  <div class='clearall'></div>
+  <div class='section' id='section-14'>
+    <div class='docs'>
+      <div class='octowrap'>
+        <a class='octothorpe' href='#section-14'>#</a>
+      </div>
+      
+    </div>
+    <div class='code'>
+      <div class="highlight"><pre>        <span class="k">def</span> <span class="nf">eat</span><span class="p">():</span>
+            <span class="n">squid</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">list_things_at</span><span class="p">(</span><span class="n">agent</span><span class="o">.</span><span class="n">location</span><span class="p">,</span> <span class="n">Squid</span><span class="p">)</span>
+            <span class="k">if</span> <span class="n">squid</span><span class="p">:</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">delete_thing</span><span class="p">(</span><span class="n">squid</span><span class="p">[</span><span class="mi">0</span><span class="p">])</span></pre></div>
+    </div>
+  </div>
+  <div class='clearall'></div>
+  <div class='section' id='section-15'>
+    <div class='docs'>
+      <div class='octowrap'>
+        <a class='octothorpe' href='#section-15'>#</a>
+      </div>
+      <p>The direction of the agent should always be 'right' in this world</p>
+    </div>
+    <div class='code'>
+      <div class="highlight"><pre>        <span class="k">assert</span> <span class="n">agent</span><span class="o">.</span><span class="n">direction</span><span class="o">.</span><span class="n">direction</span> <span class="o">==</span> <span class="n">Direction</span><span class="o">.</span><span class="n">R</span>
+
+        <span class="n">agent</span><span class="o">.</span><span class="n">bump</span> <span class="o">=</span> <span class="bp">False</span>
+        <span class="k">if</span> <span class="n">action</span> <span class="o">==</span> <span class="s1">&#39;sing_eat_and_forward&#39;</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">add_non_spatial</span><span class="p">(</span><span class="n">Song</span><span class="p">(),</span> <span class="n">time</span><span class="p">)</span>
+            <span class="n">eat</span><span class="p">()</span>
+            <span class="n">forward</span><span class="p">()</span>
+        <span class="k">elif</span> <span class="n">action</span> <span class="o">==</span> <span class="s1">&#39;eat_and_forward&#39;</span><span class="p">:</span>
+            <span class="n">eat</span><span class="p">()</span>
+            <span class="n">forward</span><span class="p">()</span>
+        <span class="k">elif</span> <span class="n">action</span> <span class="o">==</span> <span class="s1">&#39;dive_and_forward&#39;</span><span class="p">:</span>
+            <span class="n">down</span><span class="p">()</span>
+            <span class="n">forward</span><span class="p">()</span>
+        <span class="k">elif</span> <span class="n">action</span> <span class="o">==</span> <span class="s1">&#39;up_and_forward&#39;</span><span class="p">:</span>
+            <span class="n">up</span><span class="p">()</span>
+            <span class="n">forward</span><span class="p">()</span>
+        <span class="k">elif</span> <span class="n">action</span> <span class="o">==</span> <span class="s1">&#39;forward&#39;</span><span class="p">:</span>
+            <span class="n">forward</span><span class="p">()</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="n">l</span><span class="o">.</span><span class="n">error</span><span class="p">(</span><span class="s1">&#39;execute_action:unknow action&#39;</span><span class="p">,</span> <span class="n">action</span><span class="p">,</span> <span class="s1">&#39;for agent&#39;</span><span class="p">,</span> <span class="n">agent</span><span class="p">,</span> <span class="s1">&#39;at time&#39;</span><span class="p">,</span> <span class="n">time</span><span class="p">)</span>
+
+</pre></div>
+    </div>
+  </div>
+  <div class='clearall'></div>
+</div>
+</body>

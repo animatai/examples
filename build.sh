@@ -11,7 +11,7 @@ pylint *.py test/*.py
 
 # Genrate docs
 #pydoc -w *.py
-pycco *.py
+pycco -i *.py
 
 # Run the unit tests
 # Run a specific unittest manually like this:

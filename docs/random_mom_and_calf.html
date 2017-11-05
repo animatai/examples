@@ -1,0 +1,243 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <meta http-equiv="content-type" content="text/html;charset=utf-8">
+  <title>random_mom_and_calf.py</title>
+  <link rel="stylesheet" href="pycco.css">
+</head>
+<body>
+<div id='container'>
+  <div id="background"></div>
+  <div class='section'>
+    <div class='docs'><h1>random_mom_and_calf.py</h1></div>
+  </div>
+  <div class='clearall'>
+  <div class='section' id='section-0'>
+    <div class='docs'>
+      <div class='octowrap'>
+        <a class='octothorpe' href='#section-0'>#</a>
+      </div>
+      <p>pylint: disable=missing-docstring, global-statement, invalid-name, too-few-public-methods, no-self-use</p>
+<p>A random mother cachelot and calf</p>
+<p>Copyright (C) 2017  Jonas Colmsjö, Claes Strannegård</p>
+<p>A simple example that shows how the <code>animat.agent</code> package is used.
+Two cachelots, a mom and a calf, lives in the <code>Sea</code> environment chasing <code>Squid</code>.
+<code>Sea</code> is a <code>XYEnvironment</code> subclass that support the follwing actions:
+<em> sing_eat_and_forward
+</em> eat_and_forward
+<em> dive_and_forward
+</em> up_and_forward
+* forward</p>
+<p>The mother sings when she eats and the calf will dive when i hears song.
+The mother and calf will chose actions randomly when not eating. The behaviour
+of mom and calf is implemedted with the functions <code>mom_program</code> and <code>calf_program</code>.</p>
+    </div>
+    <div class='code'>
+      <div class="highlight"><pre><span></span><span class="kn">import</span> <span class="nn">random</span>
+
+<span class="kn">from</span> <span class="nn">animatai.agents</span> <span class="kn">import</span> <span class="n">Agent</span>
+<span class="kn">from</span> <span class="nn">gzutils.gzutils</span> <span class="kn">import</span> <span class="n">Logging</span>
+
+<span class="kn">from</span> <span class="nn">sea</span> <span class="kn">import</span> <span class="n">Sea</span><span class="p">,</span> <span class="n">Song</span><span class="p">,</span> <span class="n">Squid</span>
+<span class="kn">from</span> <span class="nn">random_mom_and_calf_config</span> <span class="kn">import</span> <span class="n">mom_start_pos</span><span class="p">,</span> <span class="n">calf_start_pos</span><span class="p">,</span> <span class="n">OPTIONS</span></pre></div>
+    </div>
+  </div>
+  <div class='clearall'></div>
+  <div class='section' id='section-1'>
+    <div class='docs'>
+      <div class='octowrap'>
+        <a class='octothorpe' href='#section-1'>#</a>
+      </div>
+      <h1>Setup logging</h1>
+    </div>
+    <div class='code'>
+      <div class="highlight"><pre><span class="n">DEBUG_MODE</span> <span class="o">=</span> <span class="bp">True</span>
+<span class="n">l</span> <span class="o">=</span> <span class="n">Logging</span><span class="p">(</span><span class="s1">&#39;random_mom_and_calf&#39;</span><span class="p">,</span> <span class="n">DEBUG_MODE</span><span class="p">)</span></pre></div>
+    </div>
+  </div>
+  <div class='clearall'></div>
+  <div class='section' id='section-2'>
+    <div class='docs'>
+      <div class='octowrap'>
+        <a class='octothorpe' href='#section-2'>#</a>
+      </div>
+      <p>Mom that moves by random until squid is found. Move forward when there is
+squid and sing.</p>
+    </div>
+    <div class='code'>
+      <div class="highlight"><pre><span class="k">def</span> <span class="nf">mom_program</span><span class="p">(</span><span class="n">percept</span><span class="p">):</span></pre></div>
+    </div>
+  </div>
+  <div class='clearall'></div>
+  <div class='section' id='section-3'>
+    <div class='docs'>
+      <div class='octowrap'>
+        <a class='octothorpe' href='#section-3'>#</a>
+      </div>
+      <p>pylint: disable=redefined-argument-from-local</p>
+    </div>
+    <div class='code'>
+      <div class="highlight"><pre></pre></div>
+    </div>
+  </div>
+  <div class='clearall'></div>
+  <div class='section' id='section-4'>
+    <div class='docs'>
+      <div class='octowrap'>
+        <a class='octothorpe' href='#section-4'>#</a>
+      </div>
+      <p>unpack the percepts tuple: ([Thing|NonSpatial], rewards)</p>
+    </div>
+    <div class='code'>
+      <div class="highlight"><pre>    <span class="n">percepts</span><span class="p">,</span> <span class="n">_</span> <span class="o">=</span> <span class="n">percept</span>
+
+    <span class="n">action</span> <span class="o">=</span> <span class="bp">None</span>
+    <span class="k">for</span> <span class="n">percept</span> <span class="ow">in</span> <span class="n">percepts</span><span class="p">:</span></pre></div>
+    </div>
+  </div>
+  <div class='clearall'></div>
+  <div class='section' id='section-5'>
+    <div class='docs'>
+      <div class='octowrap'>
+        <a class='octothorpe' href='#section-5'>#</a>
+      </div>
+      <p>_2=radius</p>
+    </div>
+    <div class='code'>
+      <div class="highlight"><pre>        <span class="n">object_</span><span class="p">,</span> <span class="n">_2</span> <span class="o">=</span> <span class="n">percept</span>
+        <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">object_</span><span class="p">,</span> <span class="n">Squid</span><span class="p">):</span>
+            <span class="n">l</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="s1">&#39;--- MOM FOUND SQUID, SINGING AND EATING! ---&#39;</span><span class="p">)</span>
+            <span class="n">action</span> <span class="o">=</span> <span class="s1">&#39;sing_eat_and_forward&#39;</span>
+
+    <span class="k">if</span> <span class="ow">not</span> <span class="n">action</span><span class="p">:</span>
+        <span class="n">action</span> <span class="o">=</span> <span class="s1">&#39;forward&#39;</span>
+        <span class="n">rand</span> <span class="o">=</span> <span class="n">random</span><span class="o">.</span><span class="n">random</span><span class="p">()</span>
+        <span class="k">if</span> <span class="n">rand</span> <span class="o">&lt;</span> <span class="mi">1</span><span class="o">/</span><span class="mi">3</span><span class="p">:</span>
+            <span class="n">action</span> <span class="o">=</span> <span class="s1">&#39;dive_and_forward&#39;</span>
+        <span class="k">elif</span> <span class="n">rand</span> <span class="o">&lt;</span> <span class="mi">2</span><span class="o">/</span><span class="mi">3</span><span class="p">:</span>
+            <span class="n">action</span> <span class="o">=</span> <span class="s1">&#39;up_and_forward&#39;</span>
+
+
+    <span class="k">return</span> <span class="n">action</span></pre></div>
+    </div>
+  </div>
+  <div class='clearall'></div>
+  <div class='section' id='section-6'>
+    <div class='docs'>
+      <div class='octowrap'>
+        <a class='octothorpe' href='#section-6'>#</a>
+      </div>
+      <p>Calf that will by random until hearing song. Dive when hearing song.
+The world will not permit diving below the bottom surface, so it will
+just move forward.</p>
+    </div>
+    <div class='code'>
+      <div class="highlight"><pre><span class="k">def</span> <span class="nf">calf_program</span><span class="p">(</span><span class="n">percept</span><span class="p">):</span></pre></div>
+    </div>
+  </div>
+  <div class='clearall'></div>
+  <div class='section' id='section-7'>
+    <div class='docs'>
+      <div class='octowrap'>
+        <a class='octothorpe' href='#section-7'>#</a>
+      </div>
+      <p>pylint: disable=redefined-argument-from-local</p>
+    </div>
+    <div class='code'>
+      <div class="highlight"><pre></pre></div>
+    </div>
+  </div>
+  <div class='clearall'></div>
+  <div class='section' id='section-8'>
+    <div class='docs'>
+      <div class='octowrap'>
+        <a class='octothorpe' href='#section-8'>#</a>
+      </div>
+      <p>unpack the percepts tuple: ([Thing|NonSpatial], rewards)</p>
+    </div>
+    <div class='code'>
+      <div class="highlight"><pre>    <span class="n">percepts</span><span class="p">,</span> <span class="n">_</span> <span class="o">=</span> <span class="n">percept</span>
+
+    <span class="n">action</span> <span class="o">=</span> <span class="bp">None</span>
+
+    <span class="k">for</span> <span class="n">percept</span> <span class="ow">in</span> <span class="n">percepts</span><span class="p">:</span></pre></div>
+    </div>
+  </div>
+  <div class='clearall'></div>
+  <div class='section' id='section-9'>
+    <div class='docs'>
+      <div class='octowrap'>
+        <a class='octothorpe' href='#section-9'>#</a>
+      </div>
+      <p>_2=radius</p>
+    </div>
+    <div class='code'>
+      <div class="highlight"><pre>        <span class="n">object_</span><span class="p">,</span> <span class="n">_2</span> <span class="o">=</span> <span class="n">percept</span>
+        <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">object_</span><span class="p">,</span> <span class="n">Squid</span><span class="p">):</span>
+            <span class="n">l</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="s1">&#39;--- CALF FOUND SQUID, EATING! ---&#39;</span><span class="p">)</span>
+            <span class="n">action</span> <span class="o">=</span> <span class="s1">&#39;eat_and_forward&#39;</span>
+
+        <span class="k">if</span> <span class="ow">not</span> <span class="n">action</span> <span class="ow">and</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">object_</span><span class="p">,</span> <span class="n">Song</span><span class="p">):</span>
+            <span class="n">l</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="s1">&#39;--- CALF HEARD SONG, DIVING! ---&#39;</span><span class="p">)</span>
+            <span class="n">action</span> <span class="o">=</span> <span class="s1">&#39;dive_and_forward&#39;</span>
+
+
+    <span class="k">if</span> <span class="ow">not</span> <span class="n">action</span><span class="p">:</span>
+        <span class="n">action</span> <span class="o">=</span> <span class="s1">&#39;forward&#39;</span>
+        <span class="n">rand</span> <span class="o">=</span> <span class="n">random</span><span class="o">.</span><span class="n">random</span><span class="p">()</span>
+        <span class="k">if</span>  <span class="n">rand</span> <span class="o">&lt;</span> <span class="mi">1</span><span class="o">/</span><span class="mi">3</span><span class="p">:</span>
+            <span class="n">action</span> <span class="o">=</span> <span class="s1">&#39;dive_and_forward&#39;</span>
+        <span class="k">elif</span> <span class="n">rand</span> <span class="o">&lt;</span> <span class="mi">2</span><span class="o">/</span><span class="mi">3</span><span class="p">:</span>
+            <span class="n">action</span> <span class="o">=</span> <span class="s1">&#39;up_and_forward&#39;</span>
+
+    <span class="k">return</span> <span class="n">action</span></pre></div>
+    </div>
+  </div>
+  <div class='clearall'></div>
+  <div class='section' id='section-10'>
+    <div class='docs'>
+      <div class='octowrap'>
+        <a class='octothorpe' href='#section-10'>#</a>
+      </div>
+      <h1>Main</h1>
+    </div>
+    <div class='code'>
+      <div class="highlight"><pre></pre></div>
+    </div>
+  </div>
+  <div class='clearall'></div>
+  <div class='section' id='section-11'>
+    <div class='docs'>
+      <div class='octowrap'>
+        <a class='octothorpe' href='#section-11'>#</a>
+      </div>
+      
+    </div>
+    <div class='code'>
+      <div class="highlight"><pre><span class="k">def</span> <span class="nf">run</span><span class="p">(</span><span class="n">wss</span><span class="o">=</span><span class="bp">None</span><span class="p">,</span> <span class="n">steps</span><span class="o">=</span><span class="bp">None</span><span class="p">,</span> <span class="n">seed</span><span class="o">=</span><span class="bp">None</span><span class="p">):</span>
+    <span class="n">l</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span><span class="s1">&#39;Running random_mom_and_calf in&#39;</span><span class="p">,</span> <span class="nb">str</span><span class="p">(</span><span class="n">steps</span><span class="p">),</span> <span class="s1">&#39;steps with seed&#39;</span><span class="p">,</span> <span class="n">seed</span><span class="p">)</span>
+    <span class="n">steps</span> <span class="o">=</span> <span class="nb">int</span><span class="p">(</span><span class="n">steps</span><span class="p">)</span> <span class="k">if</span> <span class="n">steps</span> <span class="k">else</span> <span class="mi">10</span>
+
+    <span class="n">random</span><span class="o">.</span><span class="n">seed</span><span class="p">(</span><span class="n">seed</span><span class="p">)</span>
+
+    <span class="n">options</span> <span class="o">=</span> <span class="n">OPTIONS</span>
+    <span class="n">options</span><span class="o">.</span><span class="n">wss</span> <span class="o">=</span> <span class="n">wss</span>
+    <span class="n">sea</span> <span class="o">=</span> <span class="n">Sea</span><span class="p">(</span><span class="n">options</span><span class="p">)</span>
+
+    <span class="n">mom</span> <span class="o">=</span> <span class="n">Agent</span><span class="p">(</span><span class="n">mom_program</span><span class="p">,</span> <span class="s1">&#39;mom&#39;</span><span class="p">)</span>
+    <span class="n">calf</span> <span class="o">=</span> <span class="n">Agent</span><span class="p">(</span><span class="n">calf_program</span><span class="p">,</span> <span class="s1">&#39;calf&#39;</span><span class="p">)</span>
+
+    <span class="n">sea</span><span class="o">.</span><span class="n">add_thing</span><span class="p">(</span><span class="n">mom</span><span class="p">,</span> <span class="n">mom_start_pos</span><span class="p">)</span>
+    <span class="n">sea</span><span class="o">.</span><span class="n">add_thing</span><span class="p">(</span><span class="n">calf</span><span class="p">,</span> <span class="n">calf_start_pos</span><span class="p">)</span>
+
+    <span class="n">sea</span><span class="o">.</span><span class="n">run</span><span class="p">(</span><span class="n">steps</span><span class="p">)</span>
+
+<span class="k">if</span> <span class="vm">__name__</span> <span class="o">==</span> <span class="s2">&quot;__main__&quot;</span><span class="p">:</span>
+    <span class="n">run</span><span class="p">()</span>
+
+</pre></div>
+    </div>
+  </div>
+  <div class='clearall'></div>
+</div>
+</body>
