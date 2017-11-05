@@ -107,7 +107,7 @@ class Calf(Agent):
                   'up_and_forward']
 
         eat_and_forward, forward = frozenset([0]), frozenset([1])
-        dive_and_forward, up_and_forward  = frozenset([2]), frozenset([3])
+        dive_and_forward, up_and_forward = frozenset([2]), frozenset([3])
 
         motors_to_action = {eat_and_forward: 'eat_and_forward',
                             forward: 'forward',
