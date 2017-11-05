@@ -12,6 +12,7 @@ pylint *.py test/*.py
 # Genrate docs
 #pydoc -w *.py
 pycco -i *.py
+touch ./docs/.nojekyll
 
 # Run the unit tests
 # Run a specific unittest manually like this:
