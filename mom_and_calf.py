@@ -9,11 +9,13 @@
 #
 
 import random
+from numpy import corrcoef
+from statistics import mean, stdev
 
 from functools import partial
 from toolz.curried import do
 from toolz.functoolz import compose
-from gzutils.gzutils import Logging, unpack
+from gzutils.gzutils import DefaultDict, Logging, unpack, get_output_dir
 
 from animatai.agents import Agent
 from animatai.network import Network, MotorNetwork
@@ -57,24 +59,22 @@ class Mom(Agent):
         motor_model = MotorModel(motors_to_action)
 
 
-        N = Network(None, objectives)
+        self.network = N = Network(None, objectives)
         self.status = N.get_NEEDs()
         self.status_history = {'energy':[]}
         s1 = N.add_SENSOR_node(Squid)
-        network_model = NetworkModel({s1: 'Squid'})
+        self.network_model = NetworkModel({frozenset(): 'No sensors',
+                                           frozenset([s1]): 'Squid'})
 
-        M = MotorNetwork(motors, motors_to_action)
+        self.motor_network = M = MotorNetwork(motors, motors_to_action)
 
         # NOTE: init=agent_start_pos, using a location here (only for debugging),
         #            is a state when MDP:s are used
-        self.ndp = NetworkDP(mom_start_pos, self.status, motor_model, .9, network_model)
+        self.ndp = NetworkDP(mom_start_pos, self.status, motor_model, .9, self.network_model)
         self.q_agent = NetworkQLearningAgent(self.ndp, Ne=0, Rplus=2,
                                              alpha=lambda n: 60./(59+n),
                                              epsilon=0.2,
                                              delta=0.5)
-
-        l.info('Mom q_agent:', self.q_agent)
-        l.info('mom_motors_to_action:', motors_to_action)
 
         # compose applies the functions from right to left
         self.program = compose(do(partial(l.debug, 'Mom mnetwork.update'))
@@ -89,7 +89,9 @@ class Mom(Agent):
                               )
 
     def __repr__(self):
-        return '<{} ({})>'.format(self.__name__, self.__class__.__name__)
+        return '<{} ({}) iterations:{}>'.format(self.__name__,
+                                     self.__class__.__name__,
+                                     self.q_agent.iterations)
 
 
 # Calf that will by random until hearing song. Dive when hearing song.
@@ -118,46 +120,51 @@ class Calf(Agent):
         motor_model = MotorModel(motors_to_action)
 
 
-        N = Network(None, objectives)
+        self.network = N = Network(None, objectives)
         self.status = N.get_NEEDs()
         self.status_history = {'energy':[]}
         s1 = N.add_SENSOR_node(Squid)
         s2 = N.add_SENSOR_node(Song)
-        network_model = NetworkModel({s1: 'Squid', s2: 'Song'})
+        self.network_model = NetworkModel({frozenset([]): 'No sensors',
+                                      frozenset([s1]): 'Squid',
+                                      frozenset([s2]): 'Song',
+                                      frozenset([s1,s2]): 'Squid and Song'})
 
-        M = MotorNetwork(motors, motors_to_action)
+        self.motor_network = M = MotorNetwork(motors, motors_to_action)
 
         # NOTE: init=agent_start_pos, using a location here (only for debugging),
         #            is a state when MDP:s are used
-        self.ndp = NetworkDP(calf_start_pos, self.status, motor_model, .9, network_model)
+        self.ndp = NetworkDP(calf_start_pos, self.status, motor_model, .9, self.network_model)
         self.q_agent = NetworkQLearningAgent(self.ndp, Ne=0, Rplus=2,
                                              alpha=lambda n: 60./(59+n),
                                              epsilon=0.2,
                                              delta=0.5)
 
-        l.info('Calf q_agent:', self.q_agent)
-        l.info('motors_to_action:', motors_to_action)
-
         # compose applies the functions from right to left
         self.program = compose(do(partial(l.debug, 'Calf mnetwork.update'))
                                , do(partial(l.debug, M))
+                               , lambda a: do(partial(l.debug, '*** CALF EATING! ***'))(a) if a == 'eat_and_forward' else a
                                , M.update
                                , do(partial(l.debug, 'Calf q_agent'))
                                , self.q_agent
                                , do(partial(l.debug, N))
+                               , lambda p: do(partial(l.debug, '*** CALF HEARD SONG! ***'))(p) if s2 in p[0] else p
+                               , lambda p: do(partial(l.debug, '*** CALF FOUND SQUID! ***'))(p) if s1 in p[0] else p
                                , do(partial(l.debug, 'Calf network.update'))
                                , N.update
                                , do(partial(l.debug, 'Calf percept'))
                               )
 
     def __repr__(self):
-        return '<{} ({})>'.format(self.__name__, self.__class__.__name__)
+        return '<{} ({}) iterations:{}>'.format(self.__name__,
+                                     self.__class__.__name__,
+                                     self.q_agent.iterations)
 
 
 # Main
 # =====
 
-def run(wss=None, steps=None, seed=None):
+def run_trial(wss=None, steps=None, seed=None):
     steps = int(steps) if steps else 10
     l.debug('Running mom_and_calf in', str(steps), 'steps with seed', seed)
 
@@ -174,6 +181,60 @@ def run(wss=None, steps=None, seed=None):
     sea.add_thing(calf, calf_start_pos)
 
     sea.run(steps)
+
+    for status in ['energy']:
+        l.debug('----- ' + status + '------')
+
+        U, pi = mom.q_agent.Q_to_U_and_pi()[status]
+        l.debug('mom - pi:', pi, ', U:', U)
+
+        U, pi = calf.q_agent.Q_to_U_and_pi()[status]
+        l.debug('calf - pi:', pi, ', U:', U)
+
+    return ({'name': mom.__name__, 'iterations': mom.q_agent.iterations, 'U_and_pi': mom.q_agent.Q_to_U_and_pi()},
+            {'name': calf.__name__, 'iterations': calf.q_agent.iterations, 'U_and_pi': calf.q_agent.Q_to_U_and_pi()})
+
+
+def summarize_U_and_pi(U_and_pi):
+    U_res = DefaultDict(0)
+    pi_res = DefaultDict(0)
+    for j in range(0, len(U_and_pi)):
+        for objective, (U, pi) in U_and_pi[j].items():
+            for sensors, action in pi.items():
+                pi_res[objective + ':' + sensors + ':' + action] += 1
+            for sensors, utility in U.items():
+                U_res[objective + ':' + sensors] += utility
+    return U_res, pi_res
+
+def run(wss=None, steps=None, seed=None, trials=1):
+    ages = ([], [])
+    U_and_pi = ([], [])
+    for i in range(0, trials):
+        mom, calf = run_trial(wss, steps, seed)
+        ages[0].append(mom['iterations'])
+        ages[1].append(calf['iterations'])
+
+        U_and_pi[0].append(mom['U_and_pi'])
+        U_and_pi[1].append(calf['U_and_pi'])
+
+        if trials != 1 and i != trials - 2:
+            OPTIONS.output_path = get_output_dir(file=__file__) # get a new timestamp in each trial
+
+
+    l.info('-------- STATS --------')
+    l.info('MEAN - mom:', mean(ages[0]), ', calf:', mean(ages[1]))
+    if len(ages[0]) > 1:
+        l.info('CORRELATIONS:\n', corrcoef(ages[0], ages[1]) )
+        l.info('STDEV - mom:', stdev(ages[0]), ', calf:', stdev(ages[1]))
+    l.info('AGES - mom:', ages[0])
+    l.info('AGES - calf:', ages[1])
+
+    l.info('PI SUMMARY - mom', summarize_U_and_pi(U_and_pi[0])[1])
+    l.info('PI SUMMARY - calf', summarize_U_and_pi(U_and_pi[1])[1])
+
+    #l.info('U_and_pi:', U_and_pi)
+
+
 
 if __name__ == "__main__":
     run()

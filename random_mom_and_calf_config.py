@@ -22,10 +22,10 @@ terrain = ('WWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWW\n' +
 # the mother and calf have separate and identical lanes
 things = ('XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX\n' +
           '                                                  \n' +
-          '  ssss                                    ssss    \n' +
+          '  ssss              ssss                  ssss    \n' +
           'XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX\n' +
           '                                                  \n' +
-          '  ssss                                    ssss    \n' +
+          '  ssss              ssss                  ssss    \n' +
           'XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX')
 
 # the mother and calf have separate and identical lanes
@@ -50,43 +50,43 @@ OPTIONS = DotDict({
     'terrain': terrain.split('\n'),
     'things': things.split('\n'),
     'exogenous_things': exogenous_things.split('\n'),
-    'exogenous_things_prob': 0.005,
+    'exogenous_things_prob': 0.05,
     'objectives': {'energy': 1.0},
     'rewards':{
         'sing_eat_and_forward': {
             Squid: {
-                'energy': 0.1
+                'energy': 0.5
             },
             None: {
-                'energy': -0.05
+                'energy': -0.02
             }
         },
         'eat_and_forward': {
             Squid: {
-                'energy': 0.1
+                'energy': 0.5
             },
             None: {
-                'energy': -0.05
+                'energy': -0.02
             }
         },
         'dive_and_forward': {
             None: {
-                'energy': -0.002
+                'energy': -0.02
             }
         },
         'up_and_forward': {
             None: {
-                'energy': -0.001
+                'energy': -0.01
             }
         },
         'forward': {
             None: {
-                'energy': -0.001
+                'energy': -0.01
             }
         },
         None: {
             None: {
-                'energy': -0.001
+                'energy': 0.0
             }
         },
     },
