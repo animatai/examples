@@ -63,15 +63,15 @@ class Mom(Agent):
         self.status = N.get_NEEDs()
         self.status_history = {'energy':[]}
         s1 = N.add_SENSOR_node(Squid)
-        self.network_model = NetworkModel({frozenset(): 'No sensors',
-                                           frozenset([s1]): 'Squid'})
+        self.network_model = NetworkModel({frozenset(): 'no_sensors',
+                                           frozenset([s1]): 'squid'})
 
         self.motor_network = M = MotorNetwork(motors, motors_to_action)
 
         # NOTE: init=agent_start_pos, using a location here (only for debugging),
         #            is a state when MDP:s are used
         self.ndp = NetworkDP(mom_start_pos, self.status, motor_model, .9, self.network_model)
-        self.q_agent = NetworkQLearningAgent(self.ndp, Ne=0, Rplus=2,
+        self.q_agent = NetworkQLearningAgent(self.ndp, Ne=100, Rplus=2,
                                              alpha=lambda n: 60./(59+n),
                                              epsilon=0.2,
                                              delta=0.5)
@@ -125,10 +125,10 @@ class Calf(Agent):
         self.status_history = {'energy':[]}
         s1 = N.add_SENSOR_node(Squid)
         s2 = N.add_SENSOR_node(Song)
-        self.network_model = NetworkModel({frozenset([]): 'No sensors',
-                                      frozenset([s1]): 'Squid',
-                                      frozenset([s2]): 'Song',
-                                      frozenset([s1,s2]): 'Squid and Song'})
+        self.network_model = NetworkModel({frozenset([]): 'no_sensors',
+                                      frozenset([s1]): 'squid',
+                                      frozenset([s2]): 'song',
+                                      frozenset([s1,s2]): 'squid_and_song'})
 
         self.motor_network = M = MotorNetwork(motors, motors_to_action)
 
@@ -204,12 +204,17 @@ def summarize_U_and_pi(U_and_pi):
                 pi_res[objective + ':' + sensors + ':' + action] += 1
             for sensors, utility in U.items():
                 U_res[objective + ':' + sensors] += utility
+    U_res = sorted(list(U_res.items()), key=lambda x: x[1], reverse=True)
+    pi_res = sorted(list(pi_res.items()), key=lambda x: x[1], reverse=True)
     return U_res, pi_res
 
 def run(wss=None, steps=None, seed=None, trials=1):
     ages = ([], [])
     U_and_pi = ([], [])
     for i in range(0, trials):
+        if i != 0:
+            OPTIONS.output_path = get_output_dir(file=__file__) # get a new timestamp in each trial
+
         mom, calf = run_trial(wss, steps, seed)
         ages[0].append(mom['iterations'])
         ages[1].append(calf['iterations'])
@@ -217,8 +222,6 @@ def run(wss=None, steps=None, seed=None, trials=1):
         U_and_pi[0].append(mom['U_and_pi'])
         U_and_pi[1].append(calf['U_and_pi'])
 
-        if trials != 1 and i != trials - 2:
-            OPTIONS.output_path = get_output_dir(file=__file__) # get a new timestamp in each trial
 
 
     l.info('-------- STATS --------')
@@ -229,10 +232,9 @@ def run(wss=None, steps=None, seed=None, trials=1):
     l.info('AGES - mom:', ages[0])
     l.info('AGES - calf:', ages[1])
 
-    l.info('PI SUMMARY - mom', summarize_U_and_pi(U_and_pi[0])[1])
-    l.info('PI SUMMARY - calf', summarize_U_and_pi(U_and_pi[1])[1])
-
-    #l.info('U_and_pi:', U_and_pi)
+    l.info('SUMMARY - U (state:sum of U over the trials) & PI  (state:number of times the policy selected action) ')
+    l.info('mom', summarize_U_and_pi(U_and_pi[0]))
+    l.info('calf', summarize_U_and_pi(U_and_pi[1]))
 
 
 
