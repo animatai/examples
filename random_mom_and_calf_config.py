@@ -31,10 +31,10 @@ things = ('XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX\n' +
 # the mother and calf have separate and identical lanes
 exogenous_things = ('                                                  \n' +
                     '                                                  \n' +
-                    '  ssss                                    ssss    \n' +
+                    '  ssss              ssss                  ssss    \n' +
                     '                                                  \n' +
                     '                                                  \n' +
-                    '  ssss                                    ssss    \n' +
+                    '  ssss              ssss                  ssss    \n' +
                     '                                                  ')
 
 

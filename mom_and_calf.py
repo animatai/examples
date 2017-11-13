@@ -70,8 +70,9 @@ class Mom(Agent):
 
         # NOTE: init=agent_start_pos, using a location here (only for debugging),
         #            is a state when MDP:s are used
-        self.ndp = NetworkDP(mom_start_pos, self.status, motor_model, .9, self.network_model)
-        self.q_agent = NetworkQLearningAgent(self.ndp, Ne=100, Rplus=2,
+        self.ndp = NetworkDP(mom_start_pos, self.status, motor_model, gamma=.9,
+                             network_model=self.network_model)
+        self.q_agent = NetworkQLearningAgent(self.ndp, Ne=0, Rplus=2,
                                              alpha=lambda n: 60./(59+n),
                                              epsilon=0.2,
                                              delta=0.5)
@@ -134,7 +135,8 @@ class Calf(Agent):
 
         # NOTE: init=agent_start_pos, using a location here (only for debugging),
         #            is a state when MDP:s are used
-        self.ndp = NetworkDP(calf_start_pos, self.status, motor_model, .9, self.network_model)
+        self.ndp = NetworkDP(calf_start_pos, self.status, motor_model, gamma=.9,
+                             network_model=self.network_model)
         self.q_agent = NetworkQLearningAgent(self.ndp, Ne=0, Rplus=2,
                                              alpha=lambda n: 60./(59+n),
                                              epsilon=0.2,

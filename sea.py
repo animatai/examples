@@ -36,6 +36,9 @@ class Sea(XYEnvironment):
         self.options.save_history_for = [Squid]
         super().__init__(self.options)
 
+        self.agent_status = {}
+        self.agent_U_and_pi = {}
+
     # to be used after the __call__ function
     def any_measurement_decreased(self):
         any_obj = list(self.environment_history)[0]
@@ -49,6 +52,12 @@ class Sea(XYEnvironment):
     def execute_action(self, agent, action, time):
         self.show_message((agent.__name__ + ' performing ' + str(action) + ' at location ' +
                            str(agent.location) + ' and time ' + str(time)))
+
+        self.agent_status[agent.__name__] = agent.status
+        self.agent_U_and_pi[agent.__name__] = agent.q_agent.Q_to_U_and_pi()
+        self.show_escaped_text('status', str(self.agent_status))
+        self.show_escaped_text('U_and_pi',  str(self.agent_U_and_pi))
+
         def up():
             agent.direction += Direction.L
             agent.bump = self.move_to(agent, agent.direction.move_forward(agent.location))
