@@ -1,4 +1,4 @@
-animatai==0.0.23
+animatai>=0.0.23
 astroid==1.5.3
 asyncio==3.4.3
 gzutils==0.0.9
