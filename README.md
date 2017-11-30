@@ -12,10 +12,10 @@ At least Python 3.5 is needed since `async` is used (using Python 3.6 here).
 * First init `virtualenv` for Python3: `virtualenv -p python3.6 venv3` (`virutalenv` needs to be installed)
 * Activate `virtualenv`: `source venv3/bin/activate`
 * Install the animat ecosystem: `pip install animatai`. Upgrade with: `pip install --upgrade animatai`.
-* Create a config file: `cp venv3/lib/python3.6/site-packages/animatai/config.py.template config.py`
+* Create a config file: `cp config.py.template config.py`
 * Having the start script here is convenient: `cp venv3/lib/python3.6/site-packages/animatai/start.sh .`
+* Install the additional packages used by these examples: `pip install -r requirements.txt`
 * And having the client here makes it easier to find (and is necessary for `start.sh` to work): `venv3/lib/python3.6/site-packages/animatai/index.html .`
-
 
 Running animat worlds
 =====================
