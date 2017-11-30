@@ -13,9 +13,7 @@ At least Python 3.5 is needed since `async` is used (using Python 3.6 here).
 * Activate `virtualenv`: `source venv3/bin/activate`
 * Install the animat ecosystem: `pip install animatai`. Upgrade with: `pip install --upgrade animatai`.
 * Create a config file: `cp config.py.template config.py`
-* Having the start script here is convenient: `cp venv3/lib/python3.6/site-packages/animatai/start.sh .`
 * Install the additional packages used by these examples: `pip install -r requirements.txt`
-* And having the client here makes it easier to find (and is necessary for `start.sh` to work): `cp venv3/lib/python3.6/site-packages/animatai/index.html .`
 
 Running animat worlds
 =====================
@@ -23,8 +21,8 @@ Running animat worlds
 Simulations can be executed from the command line with: `./run.py <blind_dog|random_agents|random_mom_and_calf>`
 
 It is also possible to view the worlds in a web browser:
-* Start a web server: `./start.sh`
-* Open `venv3/lib/python3.6/site-packages/animatai/index.html` in web browser
+* Start a web server: `cd venv3/lib/python3.6/site-packages/animatai; ./start.sh`
+* Open `index.html` in web browser
 
 
 Development
