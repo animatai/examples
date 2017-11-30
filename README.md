@@ -15,7 +15,7 @@ At least Python 3.5 is needed since `async` is used (using Python 3.6 here).
 * Create a config file: `cp config.py.template config.py`
 * Having the start script here is convenient: `cp venv3/lib/python3.6/site-packages/animatai/start.sh .`
 * Install the additional packages used by these examples: `pip install -r requirements.txt`
-* And having the client here makes it easier to find (and is necessary for `start.sh` to work): `venv3/lib/python3.6/site-packages/animatai/index.html .`
+* And having the client here makes it easier to find (and is necessary for `start.sh` to work): `cp venv3/lib/python3.6/site-packages/animatai/index.html .`
 
 Running animat worlds
 =====================
