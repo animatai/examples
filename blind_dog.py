@@ -206,7 +206,7 @@ def program(percept):
 
 # _=param
 def run(wss=None, steps=None, seed=None):
-    steps = int(steps) if steps else 10
+    steps = int(steps) if steps else 50
 
     random.seed(seed)
 

@@ -239,7 +239,7 @@ def print_grid(U):
 
 
 def run(wss=None, steps=None, seed=None):
-    steps = int(steps) if steps else 20
+    steps = int(steps) if steps else 1000
     l.debug('Running grid in', str(steps), 'steps with seed', seed)
 
     random.seed(seed)

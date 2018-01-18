@@ -210,7 +210,10 @@ def summarize_U_and_pi(U_and_pi):
     pi_res = sorted(list(pi_res.items()), key=lambda x: x[1], reverse=True)
     return U_res, pi_res
 
-def run(wss=None, steps=None, seed=None, trials=1):
+def run(wss=None, steps=None, seed=None, trials=10):
+    steps = int(steps) if steps else 500
+    random.seed(seed)
+
     ages = ([], [])
     U_and_pi = ([], [])
     for i in range(0, trials):

@@ -12,8 +12,9 @@ At least Python 3.5 is needed since `async` is used (using Python 3.6 here).
 * First init `virtualenv` for Python3: `virtualenv -p python3.6 venv3` (`virutalenv` needs to be installed)
 * Activate `virtualenv`: `source venv3/bin/activate`
 * Install the animat ecosystem: `pip install animatai`. Upgrade with: `pip install --upgrade animatai`.
-* Create a config file: `cp config.py.template config.py`
+* Create a config file: `cp config.py.template config.py`. You need to add the scenarios you develop to the config file in order to run them from the browser.
 * Install the additional packages used by these examples: `pip install -r requirements.txt`
+
 
 Running animat worlds
 =====================
